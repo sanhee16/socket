@@ -10,6 +10,10 @@ void makeCT(){
 	int val = 0;
 	char* ptr=NULL;
 	char* tok[5];
+	for(int a=0;a<ROU_NUM;a++){
+		for(int b=0;b<ROU_NUM;b++)
+			CT[a][b]=-1;
+	}
 
 	fp = fopen(path, "rb");
 	if(fp==NULL){
