@@ -412,8 +412,6 @@ static void * sndhandle(void *arg){
 		pthread_mutex_lock(&lock);
 		if(exist_buf==1){
 			SND_CT snd_ct;
-			
-
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
 			printf("---------snd- %d ---------\n",cli_sockfd);
 			print_snd(snd_ct);
@@ -433,18 +431,19 @@ static void * sndhandle(void *arg){
 				}
 			}
 			for(int a=0;a<ROU_NUM;a++){
-				if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){
-					arr_copy(snd_ct.CT,CT);
+				if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
 					//memcpy(&snd_ct.CT,&CT,sizeof(CT));
 					printf("my CT update \n");
 					print_CT();
-					
+					//snd.ct update
+					arr_copy(snd_ct.CT,CT);
 					snd_ct.visit[my_num]=1;
 					for(int x=0;x<ROU_NUM;x++){
 						if(snd_ct.visit[x]==1){
-
+						
 						}
 						else{
+							snd_ct.finish=0;
 							break;
 						}
 						snd_ct.finish=1;
@@ -454,6 +453,7 @@ static void * sndhandle(void *arg){
 					send(neighbor_sock[a],(char*)&snd_ct, sizeof(SND_CT), 0);
 					buf_count--;
 					if(buf_count==0){
+						//free buffer
 						exist_buf=0;
 						memset(&buffer,0,sizeof(buffer));
 					}
