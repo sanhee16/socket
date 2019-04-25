@@ -197,10 +197,6 @@ static void * srv_handle(void * arg){
 	}
 
 	while(1){
-		if(is_fin == 1){
-			printf("\n\n-------------server finish----------------------\n\n");
-			print_CT();
-		}
 	}
 
 }
@@ -210,10 +206,6 @@ static void * cli_handle(void *arg){
 	int con_done[5] = {0, };
 	int all_done=0;
 	while(1){
-		if(is_fin == 1){
-			printf("\n\n-------------client finish----------------------\n\n");
-			print_CT();
-		}
 		if(all_done==0){
 			for(int a=0;a<5;a++){
 				if(my_neighbor[a]==1 && con_done[a]==0){
@@ -257,7 +249,6 @@ static void * cli_handle(void *arg){
 			}
 		}
 	}
-
 }
 
 
@@ -346,11 +337,11 @@ static void * handle(void * arg)
 static void * rcvhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
 	//printf("rcv %d \n",cli_sockfd);
-
+	int done=0;
 	while(1){
-
+		
 		SND_CT get_ct;
-		memset(&(get_ct.CT),-1,sizeof(get_ct.CT));
+		memset(&(get_ct.CT),0,sizeof(get_ct.CT));
 		memset(&(get_ct.visit),0,sizeof(get_ct.visit));
 		get_ct.finish=0;
 		int len;
@@ -363,11 +354,18 @@ static void * rcvhandle(void *arg){
 			}
 		}
 
+
 		len = recv(cli_sockfd, &get_ct, sizeof(SND_CT), 0);
+		if(len<0)
+			continue;
 		pthread_mutex_lock(&lock);
-		//if(is_fin == 1){}
+		
 		if(get_ct.finish==1){
 			get_ct.check_finish[my_num]=1;
+		}
+		if(get_ct.check_fin==1){
+			done=1;
+			continue;
 		}
 		get_ct.visit[my_num]=1;
 		memcpy(&(buffer.recv_buf),&get_ct,sizeof(SND_CT));
@@ -386,34 +384,39 @@ static void * sndhandle(void *arg){
 
 	size_t getline_len;
 	int ret;
+	int done=0;
 	SND_CT first;
 	print_CT();
 
-	int ch_fin=0;
 	arr_copy(first.CT,CT);
 	for(int a=0;a<ROU_NUM;a++){
 		first.visit[a]=0;
 		first.check_finish[a]=0;
 	}
+	first.visit[my_num]=1;
 	first.finish=0;
 	send(cli_sockfd, (char*)&first, sizeof(SND_CT), 0);
 	//perror("send");
 
 	while(1){
 		pthread_mutex_lock(&lock);
+		if(done)
+			continue;
+
 		if(exist_buf==1){
 			SND_CT snd_ct;
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
 			//printf("---------snd- %d ---------\n",cli_sockfd);
 			if(buffer.recv_buf.check_fin==1){
-				buf_count--;
+				
+				//buf_count--;
 				printf("\n\n-------------client finish----------------------\n\n");
 				print_CT();
-
+				/*
 				if(buf_count==0){
 					exist_buf=0;
 					memset(&buffer,0,sizeof(buffer));
-				}
+				}*/
 				pthread_mutex_unlock(&lock);
 				continue;
 			}
@@ -428,6 +431,7 @@ static void * sndhandle(void *arg){
 						CT[a][b]=buffer.recv_buf.CT[a][b];
 					}
 					else if(buffer.recv_buf.CT[a][b]== INFINITE && CT[a][b]!=INFINITE){
+						buffer.recv_buf.CT[a][b]=CT[a][b];
 						CT[a][b]=CT[a][b];
 					}
 					else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]!=INFINITE){
@@ -453,14 +457,19 @@ static void * sndhandle(void *arg){
 					}
 					for(int x=0;x<ROU_NUM;x++){
 						if(buffer.recv_buf.finish==1){
-							snd_ct.check_fin=1;
-							if(snd_ct.check_finish[x]!=1){
+							if(snd_ct.check_finish[x]==1){
+							
+							}
+							else if(snd_ct.check_finish[x]!=1){
 								snd_ct.check_fin=0;
+								done=0;
 								break;
 							}
+							snd_ct.check_fin=1;
+							done=1;
 						}
 					}
-
+					
 					int len = sizeof(snd_ct);
 					send(neighbor_sock[a],(char*)&snd_ct, sizeof(SND_CT), 0);
 
