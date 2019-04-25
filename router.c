@@ -196,7 +196,7 @@ static void * srv_handle(void * arg){
 	}
 
 	while(1){
-		if(is_finish == 1)
+		if(is_fin == 1)
 			break;
 	}
 	printf("\n\n-------------server finish----------------------\n\n");
@@ -209,7 +209,7 @@ static void * cli_handle(void *arg){
 	int con_done[5] = {0, };
 	int all_done=0;
 	while(1){
-		if(is_finish == 1)
+		if(is_fin == 1)
 			break;
 		if(all_done==0){
 			for(int a=0;a<5;a++){
@@ -340,14 +340,14 @@ static void * handle(void * arg)
 
 
 	//pthread_create(&snd_thread[cli_sockfd],NULL,sndhandle,&snd_arg);
-	printf("make rcv and snd \n\n");
+	//printf("make rcv and snd \n\n");
 	while(1);
 }
 
 
 static void * rcvhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
-	printf("rcv %d \n",cli_sockfd);
+	//printf("rcv %d \n",cli_sockfd);
 	
 	while(1){
 		SND_CT get_ct;
@@ -364,12 +364,12 @@ static void * rcvhandle(void *arg){
 			}
 		}
 
-		printf("loop rcv %d \n\n",cli_sockfd);
+		//printf("loop rcv %d \n\n",cli_sockfd);
 		len = recv(cli_sockfd, &get_ct, sizeof(SND_CT), 0);
-		perror("recv");
+		//perror("recv");
 
-		printf("------rcv--------- \n");
-		print_snd(get_ct);
+		//printf("------rcv--------- \n");
+		//print_snd(get_ct);
 		if (len < 0)
 			break;
 
@@ -379,7 +379,7 @@ static void * rcvhandle(void *arg){
 			continue;
 		}
 		if(get_ct.finish==1){
-			printf("finish the table \n");
+			//printf("finish the table \n");
 			get_ct.check_finish[my_num]=1;
 		}
 		get_ct.visit[my_num]=1;
@@ -400,7 +400,7 @@ static void * sndhandle(void *arg){
 	size_t getline_len;
 	int ret;
 	SND_CT first;
-	print_CT();
+	//print_CT();
 
 	int ch_fin=0;
 	arr_copy(first.CT,CT);
@@ -410,14 +410,14 @@ static void * sndhandle(void *arg){
 	}
 	first.finish=0;
 	send(cli_sockfd, (char*)&first, sizeof(SND_CT), 0);
-	perror("send");
+	//perror("send");
 
 	while(1){
 		pthread_mutex_lock(&lock);
 		if(exist_buf==1){
 			SND_CT snd_ct;
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
-			printf("---------snd- %d ---------\n",cli_sockfd);
+			//printf("---------snd- %d ---------\n",cli_sockfd);
 			
 			ch_fin = 0;
 			if(buffer.recv_buf.finish==1){
@@ -430,10 +430,10 @@ static void * sndhandle(void *arg){
 				}
 				if(ch_fin==1){
 					is_fin=1;
-					print_CT();
+					//print_CT();
 					//close(buffer.cli_sockfd);
 					pthread_mutex_unlock(&lock);
-					printf("close \n");
+					//printf("close \n");
 					exist_buf=0;
 					//close_cli++;
 					break;
@@ -486,8 +486,8 @@ static void * sndhandle(void *arg){
 		fflush(NULL);
 		pthread_mutex_unlock(&lock);
 	}
-	        printf("\n\n---------done-----------\n\n");
-		   	print_CT();
+	        //`printf("\n\n---------done-----------\n\n");
+		   	//print_CT();
 			while(1);
 }
 
