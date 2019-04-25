@@ -36,6 +36,7 @@ typedef struct snd_ct{
 	int CT[ROU_NUM][ROU_NUM];
 	int visit[ROU_NUM];
 	int finish;
+	int check_finish[ROU_NUM];
 }SND_CT;
 
 typedef struct buf{
@@ -376,6 +377,7 @@ static void * rcvhandle(void *arg){
 		if(get_ct.finish==1){
 			printf("finish the table \n");
 			print_CT();
+			buffer.recv_buf.check_finish[my_num]=1;
 			//break;
 		}
 		get_ct.visit[my_num]=1;
@@ -395,7 +397,7 @@ static void * sndhandle(void *arg){
 
 	size_t getline_len;
 	int ret;
-
+	int is_fin = 0;
 	SND_CT first;
 	print_CT();
 
@@ -412,7 +414,7 @@ static void * sndhandle(void *arg){
 	while(1){
 		pthread_mutex_lock(&lock);
 		if(exist_buf==1){
-			if(close_cli==ROU_NUM){
+			if(is_fin==1){
 				printf("end the socket \n");
 				break;
 			}
@@ -421,11 +423,20 @@ static void * sndhandle(void *arg){
 			printf("---------snd- %d ---------\n",cli_sockfd);
 			print_snd(snd_ct);
 			
+			is_fin = 0;
 			if(buffer.recv_buf.finish==1){
-				close(buffer.cli_sockfd);
-				printf("close \n");
-				close_cli++;
-				continue;
+				is_fin=1;
+				for(int ch=0;ch<ROU_NUM;ch++){
+					if(buffer.recv_buf.check_finish[ch]==0){
+						is_fin=0;
+						break;
+					}
+				}
+				if(is_fin==1){
+					close(buffer.cli_sockfd);
+					printf("close \n");
+					close_cli++;
+				}
 			}
 			
 			//snd_ct = buffer.recv_buf;
