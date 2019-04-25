@@ -414,10 +414,6 @@ static void * sndhandle(void *arg){
 	while(1){
 		pthread_mutex_lock(&lock);
 		if(exist_buf==1){
-			if(is_fin==1){
-				printf("end the socket \n");
-				break;
-			}
 			SND_CT snd_ct;
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
 			printf("---------snd- %d ---------\n",cli_sockfd);
@@ -435,8 +431,10 @@ static void * sndhandle(void *arg){
 				if(is_fin==1){
 					print_CT();
 					close(buffer.cli_sockfd);
+					pthread_mutex_unlock(&lock);
 					printf("close \n");
 					close_cli++;
+					break;
 				}
 			}
 			
@@ -468,10 +466,6 @@ static void * sndhandle(void *arg){
 			}
 			for(int a=0;a<ROU_NUM;a++){
 				if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
-					//memcpy(&snd_ct.CT,&CT,sizeof(CT));
-					//printf("my CT update \n");
-					//print_CT();
-					//snd.ct update
 					arr_copy(snd_ct.CT,CT);
 					snd_ct.visit[my_num]=1;
 					for(int x=0;x<ROU_NUM;x++){
@@ -485,48 +479,14 @@ static void * sndhandle(void *arg){
 						snd_ct.finish=1;
 					}
 					int len = sizeof(snd_ct);
-					//send(neighbor_sock[a],(char*)&len,sizeof(int),0);
 					send(neighbor_sock[a],(char*)&snd_ct, sizeof(SND_CT), 0);
 					buf_count--;
 					if(buf_count==0){
-						//free buffer
 						exist_buf=0;
 						memset(&buffer,0,sizeof(buffer));
 					}
 
 				}
-				/*
-				   if(my_neighbor[a]==1 && snd_ct.visit[a]==1){
-				   continue;
-				   }
-				   else if(my_neighbor[a]==1 && snd_ct.visit[a]==0){
-			//send msg : my CT;
-			//snd_ct.CT = CT;
-
-			memcpy(&snd_ct.CT,&CT,sizeof(CT));
-			snd_ct.visit[my_num]=1;
-			for(int x=0;x<ROU_NUM;x++){
-			if(snd_ct.visit[x]==1){
-
-			}
-			else{
-			break;
-			}
-			snd_ct.finish=1;
-			}
-			int len = sizeof(snd_ct);
-			//send(neighbor_sock[a],(char*)&len,sizeof(int),0);
-			send(neighbor_sock[a], &snd_ct, sizeof(SND_CT), 0);
-			buf_count--;
-			if(buf_count==0){
-			exist_buf=0;
-			memset(&buffer,0,sizeof(buffer));
-			}
-			}
-			else if(my_neighbor[a]==0 && snd_ct.visit[a]==1){
-			continue;
-			}
-				 */
 			}
 		}
 		fflush(NULL);
