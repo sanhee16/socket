@@ -29,6 +29,7 @@ int buf_count=0;
 int neighbor_sock[ROU_NUM] = {-1, };
 int neighbor_sock_srv[ROU_NUM] = {-1, };
 int client_num;
+int is_fin = 0;
 int close_cli;
 
 
@@ -368,6 +369,10 @@ static void * rcvhandle(void *arg){
 			break;
 
 		pthread_mutex_lock(&lock);
+		if(is_fin == 1){
+			pthread_mutex_unlock(&lock);
+			break;
+		}
 		if(get_ct.finish==1){
 			printf("finish the table \n");
 			get_ct.check_finish[my_num]=1;
@@ -389,10 +394,10 @@ static void * sndhandle(void *arg){
 
 	size_t getline_len;
 	int ret;
-	int is_fin = 0;
 	SND_CT first;
 	print_CT();
 
+	int ch_fin=0;
 	arr_copy(first.CT,CT);
 	for(int a=0;a<ROU_NUM;a++){
 		first.visit[a]=0;
@@ -409,21 +414,23 @@ static void * sndhandle(void *arg){
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
 			printf("---------snd- %d ---------\n",cli_sockfd);
 			
-			is_fin = 0;
+			ch_fin = 0;
 			if(buffer.recv_buf.finish==1){
-				is_fin=1;
+				ch_fin=1;
 				for(int ch=0;ch<ROU_NUM;ch++){
 					if(buffer.recv_buf.check_finish[ch]==0){
-						is_fin=0;
+						ch_fin=0;
 						break;
 					}
 				}
-				if(is_fin==1){
+				if(ch_fin==1){
+					is_fin=1;
 					print_CT();
 					close(buffer.cli_sockfd);
 					pthread_mutex_unlock(&lock);
 					printf("close \n");
-					close_cli++;
+					exist_buf=0;
+					//close_cli++;
 					break;
 				}
 			}
