@@ -196,15 +196,11 @@ static void * srv_handle(void * arg){
 	}
 
 	while(1){
-		pthread_mutex_lock(&lock);
 		if(is_fin == 1){
 			printf("\n\n-------------server finish----------------------\n\n");
 			print_CT();
 		}
-		pthread_mutex_unlock(&lock);
 	}
-	printf("\n\n-------------server finish----------------------\n\n");
-	print_CT();
 
 }
 
@@ -213,12 +209,10 @@ static void * cli_handle(void *arg){
 	int con_done[5] = {0, };
 	int all_done=0;
 	while(1){
-		pthread_mutex_lock(&lock);
 		if(is_fin == 1){
 			printf("\n\n-------------client finish----------------------\n\n");
 			print_CT();
 		}
-		pthread_mutex_unlock(&lock);
 		if(all_done==0){
 			for(int a=0;a<5;a++){
 				if(my_neighbor[a]==1 && con_done[a]==0){
@@ -263,9 +257,6 @@ static void * cli_handle(void *arg){
 		}
 	}
 
-
-	printf("\n\n-------------client finish----------------------\n\n");
-	print_CT();
 }
 
 
@@ -370,22 +361,12 @@ static void * rcvhandle(void *arg){
 			}
 		}
 
-		//printf("loop rcv %d \n\n",cli_sockfd);
 		len = recv(cli_sockfd, &get_ct, sizeof(SND_CT), 0);
-		//perror("recv");
-
-		//printf("------rcv--------- \n");
-		//print_snd(get_ct);
 		if (len < 0)
 			break;
 
-		pthread_mutex_lock(&lock);
-		if(is_fin == 1){
-			pthread_mutex_unlock(&lock);
-			continue;
-		}
+		//if(is_fin == 1){}
 		if(get_ct.finish==1){
-			//printf("finish the table \n");
 			get_ct.check_finish[my_num]=1;
 		}
 		get_ct.visit[my_num]=1;
@@ -425,21 +406,6 @@ static void * sndhandle(void *arg){
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
 			//printf("---------snd- %d ---------\n",cli_sockfd);
 			
-			ch_fin = 0;
-			if(buffer.recv_buf.finish==1){
-				ch_fin=1;
-				for(int ch=0;ch<ROU_NUM;ch++){
-					if(buffer.recv_buf.check_finish[ch]==0){
-						ch_fin=0;
-						break;
-					}
-				}
-				if(ch_fin==1){
-					is_fin=1;
-					pthread_mutex_unlock(&lock);
-				}
-			}
-			
 			int snd_sockfd = buffer.cli_sockfd;
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
@@ -458,6 +424,17 @@ static void * sndhandle(void *arg){
 				}
 
 			}
+			if(buffer.recv_buf.finish==1){
+				buf_count--;
+				if(buf_count==0){
+				exist_buf=0;
+				memset(&buffer,0,sizeof(buffer));
+				}
+				printf("\n\n-------------client finish----------------------\n\n");
+				            print_CT();
+				pthread_mutex_unlock(&lock);
+				continue;
+			}
 			for(int a=0;a<ROU_NUM;a++){
 				if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
 					arr_copy(snd_ct.CT,CT);
@@ -474,6 +451,7 @@ static void * sndhandle(void *arg){
 					}
 					int len = sizeof(snd_ct);
 					send(neighbor_sock[a],(char*)&snd_ct, sizeof(SND_CT), 0);
+					
 					buf_count--;
 					if(buf_count==0){
 						exist_buf=0;
