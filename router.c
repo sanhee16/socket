@@ -29,6 +29,8 @@ int buf_count=0;
 int neighbor_sock[ROU_NUM] = {-1, };
 int neighbor_sock_srv[ROU_NUM] = {-1, };
 int client_num;
+int close_cli;
+
 
 typedef struct snd_ct{
 	int CT[ROU_NUM][ROU_NUM];
@@ -410,8 +412,19 @@ static void * sndhandle(void *arg){
 	while(1){
 		pthread_mutex_lock(&lock);
 		if(exist_buf==1){
+			if(close_cli==ROU_NUM){
+				printf("end the socket \n");
+				break;
+			}
 			SND_CT snd_ct;
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
+			if(buffer.recv_buf.finish==1){
+				close(buffer.cli_sockfd);
+				printf("close \n");
+				close_cli++;
+				continue;
+			}
+			
 			printf("---------snd- %d ---------\n",cli_sockfd);
 			print_snd(snd_ct);
 			//snd_ct = buffer.recv_buf;
@@ -421,7 +434,7 @@ static void * sndhandle(void *arg){
 			//update cost table mine
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
-					if(buffer.recv_buf.CT[a][b]== INFINITE && CT[a][b]==INFINITE){
+					if(buffer.recv_buf.CT[a][b]==INFINITE && CT[a][b]==INFINITE){
 						CT[a][b]=CT[a][b];
 					}
 					else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]==INFINITE){
@@ -431,7 +444,7 @@ static void * sndhandle(void *arg){
 						CT[a][b]=CT[a][b];
 					}
 					else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]!=INFINITE){
-						CT[a][b]=CT[a][b];
+						CT[a][b]=buffer.recv_buf.CT[a][b];
 					}
 				/*	if(buffer.recv_buf.CT[a][b]!=0){
 						CT[a][b]=buffer.recv_buf.CT[a][b];
