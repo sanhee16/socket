@@ -14,7 +14,6 @@
 
 //#define ROU_NUM 5
 //#define my_num 1
-#define INFINITE 9999
 
 pthread_t tids[100];
 pthread_t rcv_thread[100];
@@ -421,14 +420,10 @@ static void * sndhandle(void *arg){
 			int snd_sockfd = buffer.cli_sockfd;
 			//update cost table mine
 			for(int a=0;a<ROU_NUM;a++){
-				if(snd_ct.CT[a][0]==-1){
-					continue;
-				}
-				else{
 					for(int b=0;b<ROU_NUM;b++){
-						CT[a][b]=buffer.recv_buf.CT[a][b];
+						if(buffer.recv_buf.CT[a][b]!=0)
+							CT[a][b]=buffer.recv_buf.CT[a][b];
 					}
-				}
 			}
 			for(int a=0;a<ROU_NUM;a++){
 				if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
@@ -510,7 +505,7 @@ void arr_copy(int(*arr)[ROU_NUM], int(*copy)[ROU_NUM]){
 void print_CT(){
 	for(int a=0;a<ROU_NUM;a++){
 		for(int b=0;b<ROU_NUM;b++){
-			printf("%d ",CT[a][b]);
+			printf("%6d ",CT[a][b]);
 		}
 		printf("\n");
 	}

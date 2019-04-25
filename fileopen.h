@@ -1,5 +1,6 @@
 #define ROU_NUM 4
 #define my_num 0
+#define INFINITE 9999
 
 int my_neighbor[ROU_NUM] = {-1, };
 int CT[ROU_NUM][ROU_NUM] = {-1, };
@@ -12,7 +13,7 @@ void makeCT(){
 	char* tok[5];
 	for(int a=0;a<ROU_NUM;a++){
 		for(int b=0;b<ROU_NUM;b++)
-			CT[a][b]=-1;
+			CT[a][b]=INFINITE;
 	}
 
 	fp = fopen(path, "rb");
@@ -71,7 +72,7 @@ void makeCT(){
 				//my_neighbor[a]=0;
 				CT[a][a]=0;
 			}
-			printf("%d ",CT[a][b]);
+			printf("%6d ",CT[a][b]);
 		}
 		printf("\n");
 	}
