@@ -68,7 +68,7 @@ void makeCT(){
 	}
 	for(int a=0;a<ROU_NUM;a++){
 		for(int b=0;b<ROU_NUM;b++){
-			if(a==b){
+			if(a==my_num && b==my_num){
 				//my_neighbor[a]=0;
 				CT[a][a]=0;
 			}
