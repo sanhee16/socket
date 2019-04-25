@@ -188,21 +188,20 @@ static void * srv_handle(void * arg){
 			neighbor_sock_srv[4]=cli_sockarr[a];
 		}
 
-		//pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sock);
-		//pthread_create(&tids[router_num], NULL, handle, &cli_sock);
-		//pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sock);
-		//pthread_create(&snd_thread[router_num],NULL,sndhandle,&cli_sock);
-		//printf("rcv %d \n",cli_sock);
-		//router_num++;
 	}
-	printf("out");
 	for(int a=0;a<count_srv;a++){
 		printf("make thread \n");
 		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
 		router_num++;
 	}
 
-	while(1){}
+	while(1){
+		if(is_finish == 1)
+			break;
+	}
+	printf("\n\n-------------server finish----------------------\n\n");
+	print_CT();
+
 }
 
 static void * cli_handle(void *arg){
@@ -210,6 +209,8 @@ static void * cli_handle(void *arg){
 	int con_done[5] = {0, };
 	int all_done=0;
 	while(1){
+		if(is_finish == 1)
+			break;
 		if(all_done==0){
 			for(int a=0;a<5;a++){
 				if(my_neighbor[a]==1 && con_done[a]==0){
@@ -253,6 +254,10 @@ static void * cli_handle(void *arg){
 			}
 		}
 	}
+
+
+	printf("\n\n-------------client finish----------------------\n\n");
+	print_CT();
 }
 
 
@@ -371,7 +376,7 @@ static void * rcvhandle(void *arg){
 		pthread_mutex_lock(&lock);
 		if(is_fin == 1){
 			pthread_mutex_unlock(&lock);
-			break;
+			continue;
 		}
 		if(get_ct.finish==1){
 			printf("finish the table \n");
@@ -426,7 +431,7 @@ static void * sndhandle(void *arg){
 				if(ch_fin==1){
 					is_fin=1;
 					print_CT();
-					close(buffer.cli_sockfd);
+					//close(buffer.cli_sockfd);
 					pthread_mutex_unlock(&lock);
 					printf("close \n");
 					exist_buf=0;
@@ -481,7 +486,9 @@ static void * sndhandle(void *arg){
 		fflush(NULL);
 		pthread_mutex_unlock(&lock);
 	}
-	while(1);
+	        printf("\n\n---------done-----------\n\n");
+		   	print_CT();
+			while(1);
 }
 
 void arr_copy(int(*arr)[ROU_NUM], int(*copy)[ROU_NUM]){
