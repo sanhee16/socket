@@ -198,8 +198,8 @@ static void * srv_handle(void * arg){
 	while(1){
 		pthread_mutex_lock(&lock);
 		if(is_fin == 1){
+			printf("\n\n-------------server finish----------------------\n\n");
 			print_CT();
-			break;
 		}
 		pthread_mutex_unlock(&lock);
 	}
@@ -215,8 +215,8 @@ static void * cli_handle(void *arg){
 	while(1){
 		pthread_mutex_lock(&lock);
 		if(is_fin == 1){
+			printf("\n\n-------------client finish----------------------\n\n");
 			print_CT();
-			break;
 		}
 		pthread_mutex_unlock(&lock);
 		if(all_done==0){
@@ -436,13 +436,7 @@ static void * sndhandle(void *arg){
 				}
 				if(ch_fin==1){
 					is_fin=1;
-					//print_CT();
-					//close(buffer.cli_sockfd);
 					pthread_mutex_unlock(&lock);
-					//printf("close \n");
-					exist_buf=0;
-					//close_cli++;
-					break;
 				}
 			}
 			
