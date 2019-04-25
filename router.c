@@ -38,6 +38,7 @@ typedef struct snd_ct{
 	int visit[ROU_NUM];
 	int finish;
 	int check_finish[ROU_NUM];
+	int check_fin;
 }SND_CT;
 
 typedef struct buf{
@@ -59,7 +60,7 @@ void print_snd(SND_CT pp){
 	}
 	printf("\nvisit finish\n");
 	for(int a=0;a<ROU_NUM;a++){
-	    printf("%d ",pp.check_finish[a]);
+		printf("%d ",pp.check_finish[a]);
 	}
 
 	printf("\nfinish\n %d\n",pp.finish);
@@ -345,8 +346,9 @@ static void * handle(void * arg)
 static void * rcvhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
 	//printf("rcv %d \n",cli_sockfd);
-	
+
 	while(1){
+
 		SND_CT get_ct;
 		memset(&(get_ct.CT),-1,sizeof(get_ct.CT));
 		memset(&(get_ct.visit),0,sizeof(get_ct.visit));
@@ -362,9 +364,7 @@ static void * rcvhandle(void *arg){
 		}
 
 		len = recv(cli_sockfd, &get_ct, sizeof(SND_CT), 0);
-		if (len < 0)
-			break;
-
+		pthread_mutex_lock(&lock);
 		//if(is_fin == 1){}
 		if(get_ct.finish==1){
 			get_ct.check_finish[my_num]=1;
@@ -387,7 +387,7 @@ static void * sndhandle(void *arg){
 	size_t getline_len;
 	int ret;
 	SND_CT first;
-	//print_CT();
+	print_CT();
 
 	int ch_fin=0;
 	arr_copy(first.CT,CT);
@@ -405,7 +405,19 @@ static void * sndhandle(void *arg){
 			SND_CT snd_ct;
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
 			//printf("---------snd- %d ---------\n",cli_sockfd);
-			
+			if(buffer.recv_buf.check_fin==1){
+				buf_count--;
+				printf("\n\n-------------client finish----------------------\n\n");
+				print_CT();
+
+				if(buf_count==0){
+					exist_buf=0;
+					memset(&buffer,0,sizeof(buffer));
+				}
+				pthread_mutex_unlock(&lock);
+				continue;
+			}
+
 			int snd_sockfd = buffer.cli_sockfd;
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
@@ -422,19 +434,9 @@ static void * sndhandle(void *arg){
 						CT[a][b]=buffer.recv_buf.CT[a][b];
 					}
 				}
+			}
+			print_CT();
 
-			}
-			if(buffer.recv_buf.finish==1){
-				buf_count--;
-				if(buf_count==0){
-				exist_buf=0;
-				memset(&buffer,0,sizeof(buffer));
-				}
-				printf("\n\n-------------client finish----------------------\n\n");
-				            print_CT();
-				pthread_mutex_unlock(&lock);
-				continue;
-			}
 			for(int a=0;a<ROU_NUM;a++){
 				if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
 					arr_copy(snd_ct.CT,CT);
@@ -449,9 +451,19 @@ static void * sndhandle(void *arg){
 						}
 						snd_ct.finish=1;
 					}
+					for(int x=0;x<ROU_NUM;x++){
+						if(buffer.recv_buf.finish==1){
+							snd_ct.check_fin=1;
+							if(snd_ct.check_finish[x]!=1){
+								snd_ct.check_fin=0;
+								break;
+							}
+						}
+					}
+
 					int len = sizeof(snd_ct);
 					send(neighbor_sock[a],(char*)&snd_ct, sizeof(SND_CT), 0);
-					
+
 					buf_count--;
 					if(buf_count==0){
 						exist_buf=0;
@@ -464,9 +476,9 @@ static void * sndhandle(void *arg){
 		fflush(NULL);
 		pthread_mutex_unlock(&lock);
 	}
-	        //`printf("\n\n---------done-----------\n\n");
-		   	//print_CT();
-			while(1);
+	//`printf("\n\n---------done-----------\n\n");
+	//print_CT();
+	while(1);
 }
 
 void arr_copy(int(*arr)[ROU_NUM], int(*copy)[ROU_NUM]){
