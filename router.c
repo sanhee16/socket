@@ -136,7 +136,7 @@ static void * srv_handle(void * arg){
 		}
 
 		cli_sockarr[a] = accept(srv_sock, (struct sockaddr *)NULL, NULL);
-		
+
 		printf("listen %d",a);
 		int ret = -1;
 		char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
@@ -223,7 +223,7 @@ static void * cli_handle(void *arg){
 						//printf("cannot make connection");
 					}
 					con_done[a]=1;
-					
+
 					//pthread_create(&tids[router_num], NULL, handle, &make_fd);
 					pthread_create(&snd_thread[router_num],NULL,sndhandle,&make_fd);
 					//pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&make_fd);
@@ -323,8 +323,8 @@ static void * handle(void * arg)
 
 	//pthread_create(&rcv_thread[cli_sockfd],NULL,rcvhandle,&rcv_arg);
 	//pthread_create(&snd_thread[cli_sockfd],NULL,sndhandle,&cli_sockfd);
-	
-	
+
+
 	//pthread_create(&snd_thread[cli_sockfd],NULL,sndhandle,&snd_arg);
 	printf("make rcv and snd \n\n");
 	while(1);
@@ -396,7 +396,7 @@ static void * sndhandle(void *arg){
 
 	SND_CT first;
 	print_CT();
-	
+
 	//first.CT = CT;
 	//memcpy(&CT, &first.CT, sizeof(CT));
 	arr_copy(first.CT,CT);
@@ -420,10 +420,25 @@ static void * sndhandle(void *arg){
 			int snd_sockfd = buffer.cli_sockfd;
 			//update cost table mine
 			for(int a=0;a<ROU_NUM;a++){
-					for(int b=0;b<ROU_NUM;b++){
-						if(buffer.recv_buf.CT[a][b]!=0)
-							CT[a][b]=buffer.recv_buf.CT[a][b];
+				for(int b=0;b<ROU_NUM;b++){
+					if(buffer.recv_buf.CT[a][b]== INFINITE && CT[a][b]==INFINITE){
+						CT[a][b]=CT[a][b];
 					}
+					else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]==INFINITE){
+						CT[a][b]=buffer.recv_buf.CT[a][b];
+					}
+					else if(buffer.recv_buf.CT[a][b]== INFINITE && CT[a][b]!=INFINITE){
+						CT[a][b]=CT[a][b];
+					}
+					else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]!=INFINITE){
+						CT[a][b]=CT[a][b];
+					}
+				/*	if(buffer.recv_buf.CT[a][b]!=0){
+						CT[a][b]=buffer.recv_buf.CT[a][b];
+					}
+					*/
+				}
+
 			}
 			for(int a=0;a<ROU_NUM;a++){
 				if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
@@ -435,7 +450,7 @@ static void * sndhandle(void *arg){
 					snd_ct.visit[my_num]=1;
 					for(int x=0;x<ROU_NUM;x++){
 						if(snd_ct.visit[x]==1){
-						
+
 						}
 						else{
 							snd_ct.finish=0;
