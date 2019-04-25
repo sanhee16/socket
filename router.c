@@ -418,6 +418,9 @@ static void * sndhandle(void *arg){
 			}
 			SND_CT snd_ct;
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
+			printf("---------snd- %d ---------\n",cli_sockfd);
+			print_snd(snd_ct);
+			
 			if(buffer.recv_buf.finish==1){
 				close(buffer.cli_sockfd);
 				printf("close \n");
@@ -425,8 +428,6 @@ static void * sndhandle(void *arg){
 				continue;
 			}
 			
-			printf("---------snd- %d ---------\n",cli_sockfd);
-			print_snd(snd_ct);
 			//snd_ct = buffer.recv_buf;
 			//memcpy(&snd_ct,&(buffer.recv_buf),sizeof(buffer.recv_buf));
 			//print_snd(snd_ct);
