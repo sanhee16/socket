@@ -56,6 +56,11 @@ void print_snd(SND_CT pp){
 	for(int a=0;a<ROU_NUM;a++){
 		printf("%d ",pp.visit[a]);
 	}
+	printf("\nvisit finish\n");
+	for(int a=0;a<ROU_NUM;a++){
+	    printf("%d ",pp.check_finish[a]);
+	}
+
 	printf("\nfinish\n %d\n",pp.finish);
 
 }
@@ -343,15 +348,9 @@ static void * rcvhandle(void *arg){
 		memset(&(get_ct.CT),-1,sizeof(get_ct.CT));
 		memset(&(get_ct.visit),0,sizeof(get_ct.visit));
 		get_ct.finish=0;
-		//memset(&get_ct, 0, sizeof(get_ct));
 		int len;
-		//printf("init rve \n");
-		//print_snd(get_ct);
-		//len = recv(cli_sockfd, (char*)&len,sizeof(int),0);
 		SND_CT *get;
-		//memset(get,-1,sizeof(SND_CT));
 		int rcv_sock;
-		//rcv_sock = neighbor_sock[cli_sockfd];
 		for(int x=0;x<ROU_NUM;x++){
 			if(neighbor_sock[x]==cli_sockfd){
 				rcv_sock=x;
@@ -360,28 +359,20 @@ static void * rcvhandle(void *arg){
 		}
 
 		printf("loop rcv %d \n\n",cli_sockfd);
-		//len = recv(cli_sockfd, (char*)get, sizeof(SND_CT), 0);
 		len = recv(cli_sockfd, &get_ct, sizeof(SND_CT), 0);
 		perror("recv");
-		//len = recv(cli_sockfd, &get_ct, sizeof(get_ct), 0);
-		//memcpy(&get_ct,&get,sizeof(SND_CT));//segmentation fault
 
 		printf("------rcv--------- \n");
 		print_snd(get_ct);
-		//print_snd(*get);
 		if (len < 0)
 			break;
-		//print_CT();
 
 		pthread_mutex_lock(&lock);
 		if(get_ct.finish==1){
 			printf("finish the table \n");
-			//print_CT();
 			get_ct.check_finish[my_num]=1;
-			//break;
 		}
 		get_ct.visit[my_num]=1;
-		//buffer.recv_buf = get_ct;
 		memcpy(&(buffer.recv_buf),&get_ct,sizeof(SND_CT));
 		buffer.cli_sockfd = rcv_sock;
 		exist_buf = 1;
@@ -389,6 +380,7 @@ static void * rcvhandle(void *arg){
 		fflush(NULL);
 		pthread_mutex_unlock(&lock);
 	}
+	while(1);
 }
 
 
@@ -401,23 +393,21 @@ static void * sndhandle(void *arg){
 	SND_CT first;
 	print_CT();
 
-	//first.CT = CT;
-	//memcpy(&CT, &first.CT, sizeof(CT));
 	arr_copy(first.CT,CT);
-	for(int a=0;a<ROU_NUM;a++)
-		first.visit[a]=-1;
+	for(int a=0;a<ROU_NUM;a++){
+		first.visit[a]=0;
+		first.check_finish[a]=0;
+	}
 	first.finish=0;
-	//printf("------first %d -----\n",cli_sockfd);
-	//print_snd(first);
 	send(cli_sockfd, (char*)&first, sizeof(SND_CT), 0);
-	perror("send");	
+	perror("send");
+
 	while(1){
 		pthread_mutex_lock(&lock);
 		if(exist_buf==1){
 			SND_CT snd_ct;
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
 			printf("---------snd- %d ---------\n",cli_sockfd);
-			//print_snd(snd_ct);
 			
 			is_fin = 0;
 			if(buffer.recv_buf.finish==1){
@@ -438,11 +428,7 @@ static void * sndhandle(void *arg){
 				}
 			}
 			
-			//snd_ct = buffer.recv_buf;
-			//memcpy(&snd_ct,&(buffer.recv_buf),sizeof(buffer.recv_buf));
-			//print_snd(snd_ct);
 			int snd_sockfd = buffer.cli_sockfd;
-			//update cost table mine
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
 					if(buffer.recv_buf.CT[a][b]==INFINITE && CT[a][b]==INFINITE){
@@ -457,10 +443,6 @@ static void * sndhandle(void *arg){
 					else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]!=INFINITE){
 						CT[a][b]=buffer.recv_buf.CT[a][b];
 					}
-				/*	if(buffer.recv_buf.CT[a][b]!=0){
-						CT[a][b]=buffer.recv_buf.CT[a][b];
-					}
-					*/
 				}
 
 			}
@@ -492,6 +474,7 @@ static void * sndhandle(void *arg){
 		fflush(NULL);
 		pthread_mutex_unlock(&lock);
 	}
+	while(1);
 }
 
 void arr_copy(int(*arr)[ROU_NUM], int(*copy)[ROU_NUM]){
