@@ -337,7 +337,7 @@ static void * handle(void * arg)
 static void * rcvhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
 	printf("rcv %d \n",cli_sockfd);
-
+	
 	while(1){
 		SND_CT get_ct;
 		memset(&(get_ct.CT),-1,sizeof(get_ct.CT));
@@ -376,8 +376,8 @@ static void * rcvhandle(void *arg){
 		pthread_mutex_lock(&lock);
 		if(get_ct.finish==1){
 			printf("finish the table \n");
-			print_CT();
-			buffer.recv_buf.check_finish[my_num]=1;
+			//print_CT();
+			get_ct.check_finish[my_num]=1;
 			//break;
 		}
 		get_ct.visit[my_num]=1;
@@ -421,7 +421,7 @@ static void * sndhandle(void *arg){
 			SND_CT snd_ct;
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
 			printf("---------snd- %d ---------\n",cli_sockfd);
-			print_snd(snd_ct);
+			//print_snd(snd_ct);
 			
 			is_fin = 0;
 			if(buffer.recv_buf.finish==1){
@@ -433,6 +433,7 @@ static void * sndhandle(void *arg){
 					}
 				}
 				if(is_fin==1){
+					print_CT();
 					close(buffer.cli_sockfd);
 					printf("close \n");
 					close_cli++;
@@ -468,8 +469,8 @@ static void * sndhandle(void *arg){
 			for(int a=0;a<ROU_NUM;a++){
 				if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
 					//memcpy(&snd_ct.CT,&CT,sizeof(CT));
-					printf("my CT update \n");
-					print_CT();
+					//printf("my CT update \n");
+					//print_CT();
 					//snd.ct update
 					arr_copy(snd_ct.CT,CT);
 					snd_ct.visit[my_num]=1;
