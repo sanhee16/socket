@@ -196,8 +196,12 @@ static void * srv_handle(void * arg){
 	}
 
 	while(1){
-		if(is_fin == 1)
+		pthread_mutex_lock(&lock);
+		if(is_fin == 1){
+			print_CT();
 			break;
+		}
+		pthread_mutex_unlock(&lock);
 	}
 	printf("\n\n-------------server finish----------------------\n\n");
 	print_CT();
@@ -209,8 +213,12 @@ static void * cli_handle(void *arg){
 	int con_done[5] = {0, };
 	int all_done=0;
 	while(1){
-		if(is_fin == 1)
+		pthread_mutex_lock(&lock);
+		if(is_fin == 1){
+			print_CT();
 			break;
+		}
+		pthread_mutex_unlock(&lock);
 		if(all_done==0){
 			for(int a=0;a<5;a++){
 				if(my_neighbor[a]==1 && con_done[a]==0){
@@ -337,8 +345,6 @@ static void * handle(void * arg)
 
 	//pthread_create(&rcv_thread[cli_sockfd],NULL,rcvhandle,&rcv_arg);
 	//pthread_create(&snd_thread[cli_sockfd],NULL,sndhandle,&cli_sockfd);
-
-
 	//pthread_create(&snd_thread[cli_sockfd],NULL,sndhandle,&snd_arg);
 	//printf("make rcv and snd \n\n");
 	while(1);
