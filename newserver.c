@@ -87,7 +87,6 @@ static void * real_server_handle(void * arg){
 	addr.sin_port = htons (port_num);
 
 	ret = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
-
 	if (ret == -1){
 		perror("BIND error!!");
 		close(srv_sock);

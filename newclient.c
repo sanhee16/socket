@@ -86,6 +86,7 @@ static void * real_client_handle(void * arg){
 		return 0;
 	}
 	int cli_acc = accept(srv_sock, (struct sockaddr *)NULL, NULL);
+	printf("acc %d with router \n",cli_acc);
 	ret = -1;
 	char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 	/* get peer addr */
@@ -114,6 +115,7 @@ static void * real_client_handle(void * arg){
 			break;
 	}
 
+	printf("make thread!!!!!!!!!\n");
 	pthread_create(&real_cli_rcvthread,NULL,real_cli_rcvhandle,&cli_acc);
 	pthread_create(&real_cli_sndthread,NULL,real_cli_sndhandle,&cli_acc);
 	while(1){

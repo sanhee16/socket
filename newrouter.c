@@ -454,7 +454,6 @@ static void * sndhandle(void *arg){
 					//fin_table[my_num]=1;
 				}
 				//buf_count--;
-				printf("\n\n-------------client finish----------------------\n\n");
 				//print_CT();
 				/*
 				   if(make_table[my_num]==0){
@@ -569,11 +568,11 @@ static void * data_srv_connect_handle(void * arg){
 	}
 	else if(my_num==1){
 		strcpy(send_ip,"220.149.244.212");
-		real_srv_sockfd=fd_sock;
+		real_cli_sockfd[0]=fd_sock;
 	}
 	else if(my_num==2){
 		strcpy(send_ip,"220.149.244.213");
-		real_srv_sockfd=fd_sock;
+		real_cli_sockfd[1]=fd_sock;
 	}
 
 	if (fd_sock == -1) {
@@ -775,6 +774,7 @@ static void * data_rcvhandle(void *arg){
 
 		int len;
 		int rcv_sock;
+/*
 		for(int x=0;x<ROU_NUM;x++){
 			printf("data: neighbor? %d \n",data_neighbor_sock[x]);
 			if(data_neighbor_sock[x]==cli_sockfd){
@@ -782,7 +782,7 @@ static void * data_rcvhandle(void *arg){
 				break;
 			}
 		}
-
+*/
 		len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 		if(len<0)
 			continue;
@@ -791,7 +791,7 @@ static void * data_rcvhandle(void *arg){
 
 		printf("data rcv : %s ",get_msg.msg);
 		memcpy(&(data_buffer.recv_buf),&get_msg,sizeof(MSG_T));
-		data_buffer.cli_sockfd = rcv_sock;
+		data_buffer.cli_sockfd = cli_sockfd;
 
 		data_exist_buf = 1;
 		fflush(NULL);
