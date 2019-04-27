@@ -30,7 +30,7 @@ static void * RT_handler(void *arg){
 			rt.cost[a]=-1;
 		}
 		for(int a=0;a<ROU_NUM;a++){
-			printf("%d ",d[a]);
+			//printf("%d ",d[a]);
 		}
 		int source = my_num;
 
@@ -58,7 +58,7 @@ static void * RT_handler(void *arg){
 				if(set_c[b]==0)
 					continue;
 				v=b;
-				printf("u is %d , v is %d \n",u,v);
+			//	printf("u is %d , v is %d \n",u,v);
 				if(d[v] > CT[u][v]+d[u]){
 					d[v]=CT[u][v]+d[u];
 					edge[v]=u;
@@ -90,10 +90,10 @@ static void * RT_handler(void *arg){
 		}
 
 		if(fin_table[my_num]==1){
-			printf("fin table?? ");
+			//printf("fin table?? ");
 			for(int a=0;a<ROU_NUM;a++){
-				printf("%d -> %d : %d",source, a, d[a]);
-				printf(" next %d \n",edge[a]);
+			//	printf("%d -> %d : %d",source, a, d[a]);
+			//	printf(" next %d \n",edge[a]);
 			}
 
 		}

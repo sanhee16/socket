@@ -116,7 +116,7 @@ static void * data_srv_handle(void * arg){
 	addr.sin_port = htons (port_num);
 
 	ret = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
-
+	printf("bind data socket\n");
 	if (ret == -1) {
 		perror("BIND error!!");
 		close(srv_sock);
