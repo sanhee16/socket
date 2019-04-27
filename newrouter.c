@@ -201,8 +201,8 @@ static void * srv_handle(void * arg){
 	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
 	
 	
-	
-	for(int a=0; a<count_srv; a++){
+	int a=0;
+	//for(int a=0; a<count_srv; a++){
 		while(1){
 		ret1= listen(srv_sock, 0);
 		if (ret1 == -1) {
@@ -258,8 +258,8 @@ static void * srv_handle(void * arg){
 		}
 		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
 		router_num++;
-		break;
-		}
+		a++;
+		
 	}
 	/*
 	for(int a=0;a<count_srv;a++){
@@ -621,7 +621,7 @@ static void * data_srv_connect_handle(void * arg){
 
 static void * data_srv_handle(void * arg){
 	int srv_sock, cli_sock;
-	int port_num, ret;
+	int port_num, ret1;
 	struct sockaddr_in addr;
 	int len;
 
@@ -665,8 +665,8 @@ static void * data_srv_handle(void * arg){
 	printf("count %d ", count_srv);
 	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
 
-	for(int a=0; a<count_srv; a++){
-
+	//for(int a=0; a<count_srv; a++){
+	int a=0;
 	while(1){
 
 		ret1 = listen(srv_sock, 0);
@@ -704,8 +704,7 @@ static void * data_srv_handle(void * arg){
 		}
 		pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sockarr[a]);
 		data_router_num++;
-	break;
-	}
+		a++;
 	}
 	/*
 	for(int a=0;a<count_srv;a++){
