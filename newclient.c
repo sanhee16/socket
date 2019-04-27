@@ -10,8 +10,8 @@
 #include <pthread.h>
 #include <netdb.h>
 
-#include "fileopen.h"
-#include "making_rt.h"
+//#include "fileopen.h"
+//#include "making_rt.h"
 //#include "data_handle_client.h"
 pthread_t real_cli_rcvthread;
 pthread_t real_cli_sndthread;
@@ -109,10 +109,6 @@ static void * real_client_handle(void * arg){
 	if (cli_acc == -1) {
 		perror("cli_sock connect ACCEPT fail");
 		close(srv_sock);
-	}
-	while(1){
-		if(fin_table[my_num]==1)
-			break;
 	}
 
 	printf("make thread!!!!!!!!!\n");

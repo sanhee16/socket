@@ -47,7 +47,7 @@ static void * real_client_handle(void * arg){
 	addr.sin_port = htons (port_num);
 
 	ret = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
-
+	
 	if (ret == -1) {
 		perror("BIND error!!");
 		close(srv_sock);
@@ -140,7 +140,7 @@ static void * real_cli_sndhandle(void *arg){
 	int done=0;
 	while(1){
 		pthread_mutex_lock(&cli_data_lock);
-
+		printf("in");
 		MSG_T snd_msg;
 		memset(&snd_msg,0,sizeof(MSG_T));
 		//char* read_buffer = (char *)malloc(362);
@@ -159,6 +159,7 @@ static void * real_cli_sndhandle(void *arg){
 			//free(read_buffer);
 			continue;
 		}
+		printf("send %s (<-cliemt)",snd_msg.msg);
 		strcpy(snd_msg.snd_ip,"220.149.244.212");
 		strcpy(snd_msg.recv_ip,"220.149.244.211");
 		//snd_msg.snd_ip="220.149.244.212";

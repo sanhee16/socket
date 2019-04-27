@@ -75,6 +75,7 @@ static void * data_srv_connect_handle(void * arg){
 		perror("socket");
 	}
 
+	printf("semnd ip %s \n",send_ip);
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons (port);
@@ -84,8 +85,9 @@ static void * data_srv_connect_handle(void * arg){
 		//perror("connect");
 		close(fd_sock);
 	}
-	pthread_create(&data_rcv_thread_srv,NULL,data_srv_handle,&fd_sock);
-	pthread_create(&data_snd_thread_srv,NULL,data_cli_handle,&fd_sock);
+	printf("make client connect");
+	pthread_create(&data_rcv_thread_srv,NULL,data_rcvhandle,&fd_sock);
+	pthread_create(&data_snd_thread_srv,NULL,data_sndhandle,&fd_sock);
 
 	while(1);
 	//return fd_sock;
@@ -202,7 +204,7 @@ static void * data_cli_handle(void *arg){
 						send_ip="220.149.244.215";
 
 					int make_fd = connect_rou_data(send_ip);
-					//neighbor_sock[a]=make_fd;
+					neighbor_sock[a]=make_fd;
 					if(make_fd==-1){
 						continue;
 					}
@@ -260,6 +262,7 @@ int connect_rou_data(char* send_ip){
 static void * data_rcvhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
 	//printf("rcv %d \n",cli_sockfd);
+	printf("hello");
 	int done=0;
 	while(1){
 		MSG_T get_msg;
@@ -268,6 +271,7 @@ static void * data_rcvhandle(void *arg){
 		int len;
 		int rcv_sock;
 		for(int x=0;x<ROU_NUM;x++){
+			printf("data: neighbor? %d \n",neighbor_sock[x]);
 			if(neighbor_sock[x]==cli_sockfd){
 				rcv_sock=x;
 				break;
