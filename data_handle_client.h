@@ -10,17 +10,17 @@ char* server_ip="220.149.244.211";
 pthread_mutex_t cli_data_lock;
 
 typedef struct msg_data{
-    char snd_ip[15];
-    char recv_ip[15];
-    int snd_port;
-    int recv_port;
-    char msg[362];
-    // this structure size is 400
+	char snd_ip[15];
+	char recv_ip[15];
+	int snd_port;
+	int recv_port;
+	char msg[362];
+	// this structure size is 400
 }MSG_T;
 
 typedef struct buf{
-    MSG_T recv_buf;
-    int cli_sockfd;
+	MSG_T recv_buf;
+	int cli_sockfd;
 }BUF;
 
 
@@ -87,6 +87,11 @@ static void * real_client_handle(void * arg){
 		perror("cli_sock connect ACCEPT fail");
 		close(srv_sock);
 	}
+	while(1){
+		if(fin_table[my_num]==1)
+			break;
+	}
+
 	pthread_create(&real_cli_rcvthread,NULL,real_cli_rcvhandle,&cli_acc);
 	pthread_create(&real_cli_sndthread,NULL,real_cli_sndhandle,&cli_acc);
 	while(1){
@@ -98,7 +103,7 @@ static void * real_cli_rcvhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
 	//printf("rcv %d \n",cli_sockfd);
 	int done=0;
-	
+
 	while(1){
 		pthread_mutex_lock(&cli_data_lock);
 		MSG_T get_msg;
@@ -106,13 +111,13 @@ static void * real_cli_rcvhandle(void *arg){
 		int len;
 		int rcv_sock;
 		/*
-		for(int x=0;x<ROU_NUM;x++){
-			if(neighbor_sock[x]==cli_sockfd){
-				rcv_sock=x;
-				break;
-			}
-		}
-		*/
+		   for(int x=0;x<ROU_NUM;x++){
+		   if(neighbor_sock[x]==cli_sockfd){
+		   rcv_sock=x;
+		   break;
+		   }
+		   }
+		 */
 		len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 		if(len<0)
 			continue;
@@ -120,8 +125,8 @@ static void * real_cli_rcvhandle(void *arg){
 		printf("%s",get_msg.msg);
 		fflush(NULL);
 		pthread_mutex_unlock(&cli_data_lock);
-	//	pthread_mutex_lock(&data_lock);
-	//	pthread_mutex_unlock(&data_lock);
+		//	pthread_mutex_lock(&data_lock);
+		//	pthread_mutex_unlock(&data_lock);
 	}
 	while(1);
 }
@@ -136,32 +141,32 @@ static void * real_cli_sndhandle(void *arg){
 	while(1){
 		pthread_mutex_lock(&cli_data_lock);
 
-			MSG_T snd_msg;
-			memset(&snd_msg,0,sizeof(MSG_T));
-			//char* read_buffer = (char *)malloc(362);
-			//ret = read(1, read_buffer, 362);
-			ret = read(1, snd_msg.msg, 362);
-			fflush(NULL);
-			
-			if (ret == -1) {
-				perror("getline");
-				break;
-			}
-			int len = strlen(snd_msg.msg);
-			//int len = strlen(read_buffer);
-			if (len == 0) {
-				pthread_mutex_unlock(&cli_data_lock);
-				//free(read_buffer);
-				continue;
-			}
-			strcpy(snd_msg.snd_ip,"220.149.244.212");
-			strcpy(snd_msg.recv_ip,"220.149.244.211");
-			//snd_msg.snd_ip="220.149.244.212";
-			//snd_msg.recv_ip="220.149.244.211";
-			snd_msg.snd_port=4712;
-			snd_msg.recv_port=4712;
+		MSG_T snd_msg;
+		memset(&snd_msg,0,sizeof(MSG_T));
+		//char* read_buffer = (char *)malloc(362);
+		//ret = read(1, read_buffer, 362);
+		ret = read(1, snd_msg.msg, 362);
+		fflush(NULL);
 
-			send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+		if (ret == -1) {
+			perror("getline");
+			break;
+		}
+		int len = strlen(snd_msg.msg);
+		//int len = strlen(read_buffer);
+		if (len == 0) {
+			pthread_mutex_unlock(&cli_data_lock);
+			//free(read_buffer);
+			continue;
+		}
+		strcpy(snd_msg.snd_ip,"220.149.244.212");
+		strcpy(snd_msg.recv_ip,"220.149.244.211");
+		//snd_msg.snd_ip="220.149.244.212";
+		//snd_msg.recv_ip="220.149.244.211";
+		snd_msg.snd_port=4712;
+		snd_msg.recv_port=4712;
+
+		send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 		fflush(NULL);
 		pthread_mutex_unlock(&cli_data_lock);
 

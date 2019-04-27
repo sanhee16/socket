@@ -1,3 +1,4 @@
+
 int neighbor_sock[ROU_NUM] = {-1, };
 int neighbor_sock_srv[ROU_NUM] = {-1, };
 
