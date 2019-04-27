@@ -580,11 +580,11 @@ static void * data_srv_connect_handle(void * arg){
 	}
 	else if(my_num==1){
 		strcpy(send_ip,"220.149.244.212");
-		real_cli_sockfd[1]=fd_sock;
+		real_cli_sockfd[0]=fd_sock;
 	}
 	else if(my_num==2){
 		strcpy(send_ip,"220.149.244.213");
-		real_cli_sockfd[0]=fd_sock;
+		real_cli_sockfd[1]=fd_sock;
 	}
 
 	if (fd_sock == -1) {
@@ -917,6 +917,8 @@ static void * data_sndhandle(void *arg){
 					printf("cannot find neigh \n");
 				}
 			}
+			printf("snd_sockfd is %d \n",snd_sockfd);
+			printf("neig %d | cli %d \n",data_neighbor_sock[snd_sockfd],cli_sockfd);
 			if(data_neighbor_sock[snd_sockfd]==cli_sockfd){
 				send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
 				perror("send");
