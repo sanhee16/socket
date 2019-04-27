@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 
 static void * srv_handle(void * arg){
 	int srv_sock, cli_sock;
-	int port_num, ret;
+	int port_num, ret1;
 	struct sockaddr_in addr;
 	int len;
 	router_num=0;
@@ -178,9 +178,9 @@ static void * srv_handle(void * arg){
 	addr.sin_addr.s_addr = htons (INADDR_ANY);
 	addr.sin_port = htons (port_num);
 
-	ret = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
+	ret1 = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
 
-	if (ret == -1) {
+	if (ret1 == -1) {
 		perror("BIND error!!");
 		close(srv_sock);
 		return 0;
@@ -201,8 +201,8 @@ static void * srv_handle(void * arg){
 	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
 	for(int a=0; a<count_srv; a++){
 		while(1){
-		ret = listen(srv_sock, 0);
-		if (ret == -1) {
+		ret1= listen(srv_sock, 0);
+		if (ret1 == -1) {
 			perror("LISTEN stanby mode fail");
 			close(srv_sock);
 			return 0;
@@ -211,7 +211,7 @@ static void * srv_handle(void * arg){
 		cli_sockarr[a] = accept(srv_sock, (struct sockaddr *)NULL, NULL);
 
 		printf("listen %d",a);
-		//int ret = -1;
+		int ret = -1;
 		char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 		/* get peer addr */
 		struct sockaddr peer_addr;
