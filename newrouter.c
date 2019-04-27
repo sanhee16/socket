@@ -319,7 +319,7 @@ static void * cli_handle(void *arg){
 			}
 		}
 	}
-	while(1);
+	//while(1);
 }
 
 
@@ -769,7 +769,7 @@ static void * data_cli_handle(void *arg){
 			}
 		}
 	}
-	while(1);
+	//while(1);
 }
 
 int connect_rou_data(char* send_ip){
