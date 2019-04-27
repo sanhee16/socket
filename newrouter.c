@@ -918,6 +918,8 @@ static void * data_sndhandle(void *arg){
 			}
 			printf("snd_sockfd is %d \n",snd_sockfd);
 			printf("neig %d | cli %d \n",data_neighbor_sock[snd_sockfd],cli_sockfd);
+			
+			pthread_mutex_lock(&data_lock);
 			if(data_neighbor_sock[snd_sockfd]==cli_sockfd){
 				send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
 				perror("send");
