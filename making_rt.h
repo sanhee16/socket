@@ -1,6 +1,7 @@
 int edge[ROU_NUM];
 int fin_table[ROU_NUM];
-
+int make_table=0;
+int rt_done=0;
 typedef struct routing{
 	int dest[ROU_NUM];
 	int next[ROU_NUM];
@@ -15,8 +16,9 @@ void print_CT();
 static void * RT_handler(void *arg){
 	//makeCT();
 	print_CT();
-	int done = *(int *)arg;
+	//int done = *(int *)arg;
 	while(1){
+		print_CT();
 		int d[ROU_NUM];
 		int set_s[ROU_NUM];
 		int set_c[ROU_NUM];
@@ -59,7 +61,7 @@ static void * RT_handler(void *arg){
 				if(set_c[b]==0)
 					continue;
 				v=b;
-			//	printf("u is %d , v is %d \n",u,v);
+				//	printf("u is %d , v is %d \n",u,v);
 				if(d[v] > CT[u][v]+d[u]){
 					d[v]=CT[u][v]+d[u];
 					edge[v]=u;
@@ -76,26 +78,28 @@ static void * RT_handler(void *arg){
 				}
 			}
 		}
-	//	printf("\n\n------result------\n\n");
+		//	printf("\n\n------result------\n\n");
 		for(int a=0;a<ROU_NUM;a++){
 			//printf("%d -> %d : %d",source, a, d[a]);
 			//printf(" next %d \n",edge[a]);
 		}
-	//	printf("\n\n------routing table------\n\n");
-	//	printf(" dest next cost \n");
+		//	printf("\n\n------routing table------\n\n");
+		//	printf(" dest next cost \n");
 		for(int a=0;a<ROU_NUM;a++){
-			if(a==my_num)
-				continue;
-			//printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
-			//printf("\n");
+			//if(a==my_num)
+			//	continue;
+			printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
+			printf("\n");
 		}
 
-		if(fin_table[my_num]==1){
-			//printf("fin table?? ");
+		if(make_table==1){
+			rt_done=1;
+			printf("fin table?? ");
 			for(int a=0;a<ROU_NUM;a++){
-			//	printf("%d -> %d : %d",source, a, d[a]);
-			//	printf(" next %d \n",edge[a]);
+				printf("%d -> %d : %d",source, a, d[a]);
+				printf(" next %d \n",edge[a]);
 			}
+			break;
 
 		}
 
