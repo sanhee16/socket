@@ -24,6 +24,8 @@ pthread_t server;
 pthread_t client;
 pthread_t making_rr;
 pthread_t cli_srv_connect_thread;
+pthread_t data_srv_thread;
+
 int router_num;
 int exist_buf=0;
 int buf_count=0;
@@ -143,9 +145,13 @@ int main(int argc, char *argv[])
 	makeCT();
 	//print_CT();
 	pthread_create(&server, NULL, srv_handle, NULL);
-	pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
+	pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
+	//pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 	pthread_create(&making_rr,NULL,RT_handler,NULL);
 
+	if(my_num==0 || my_num==1 || my_num==2){
+		pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
+	}
 	while(1){
 	}
 }
@@ -453,9 +459,6 @@ static void * sndhandle(void *arg){
 	first.finish=0;
 	send(cli_sockfd, (char*)&first, sizeof(SND_CT), 0);
 	//perror("send");
-	//RT_handler(&done);
-
-	//pthread_create(&making_rr[my_num],NULL,RT_handler,&done);
 	while(1){
 		pthread_mutex_lock(&lock);
 		if(exist_buf==1){
@@ -466,15 +469,6 @@ static void * sndhandle(void *arg){
 				pthread_mutex_unlock(&lock);
 				continue;
 			}
-			/*
-			   if(buffer.recv_buf.check_fin==1){
-			   if(make_table==0){
-			   make_table=1;
-			   }
-			   pthread_mutex_unlock(&lock);
-			   continue;
-			   }
-			 */
 			int snd_sockfd = buffer.cli_sockfd;
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
@@ -493,51 +487,47 @@ static void * sndhandle(void *arg){
 					}
 				}
 			}
-			//print_CT();
-			//for(int a=0;a<ROU_NUM;a++){
-				//if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
-					//fin_costtable[a]=1;
 
-					arr_copy(snd_ct.CT,CT);
-					snd_ct.visit[my_num]=1;
+			arr_copy(snd_ct.CT,CT);
+			snd_ct.visit[my_num]=1;
+			for(int x=0;x<ROU_NUM;x++){
+				if(snd_ct.visit[x]==1){
+
+				}
+				else{
+					snd_ct.finish=0;
+					break;
+				}
+				snd_ct.finish=1;
+			}
+			snd_ct.check_finish[my_num]=1;
+			if(loop_onetime==0){
+				if(buffer.recv_buf.finish==1){
 					for(int x=0;x<ROU_NUM;x++){
-						if(snd_ct.visit[x]==1){
+						if(snd_ct.check_finish[x]==1){
 
 						}
-						else{
-							snd_ct.finish=0;
+						else if(snd_ct.check_finish[x]!=1){
+							snd_ct.check_fin=0;
+							done=0;
 							break;
 						}
-						snd_ct.finish=1;
+						snd_ct.check_fin=1;
+						done=1;
 					}
-					snd_ct.check_finish[my_num]=1;
-					if(loop_onetime==0){
-						if(buffer.recv_buf.finish==1){
-							for(int x=0;x<ROU_NUM;x++){
-								if(snd_ct.check_finish[x]==1){
+				}
+			}
 
-								}
-								else if(snd_ct.check_finish[x]!=1){
-									snd_ct.check_fin=0;
-									done=0;
-									break;
-								}
-								snd_ct.check_fin=1;
-								done=1;
-							}
-						}
-					}
-
-					if(done==1){
-						loop_onetime=1;
-						if(make_table==0){
-							make_table=1;
-							//pthread_create(&making_rr,NULL,RT_handler,NULL);
-							//pthread_mutex_unlock(&lock);
-						}
-					}
-					for(int a=0;a<ROU_NUM;a++){
-					if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
+			if(done==1){
+				loop_onetime=1;
+				if(make_table==0){
+					make_table=1;
+					//pthread_create(&making_rr,NULL,RT_handler,NULL);
+					//pthread_mutex_unlock(&lock);
+				}
+			}
+			for(int a=0;a<ROU_NUM;a++){
+				if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
 					int len = sizeof(snd_ct);
 					send(neighbor_sock[a],(char*)&snd_ct, sizeof(SND_CT), 0);
 
@@ -552,11 +542,8 @@ static void * sndhandle(void *arg){
 		fflush(NULL);
 		pthread_mutex_unlock(&lock);
 	}
-	//`printf("\n\n---------done-----------\n\n");
-	//print_CT();
 	while(1);
 }
-
 void arr_copy(int(*arr)[ROU_NUM], int(*copy)[ROU_NUM]){
 	for(int a=0;a<ROU_NUM;a++){
 		for(int b=0;b<ROU_NUM;b++){
@@ -605,6 +592,7 @@ static void * data_srv_connect_handle(void * arg){
 		close(fd_sock);
 	}
 	printf("make client connect");
+	
 	pthread_create(&data_rcv_thread_srv,NULL,data_rcvhandle,&fd_sock);
 	pthread_create(&data_snd_thread_srv,NULL,data_sndhandle,&fd_sock);
 
@@ -656,6 +644,8 @@ static void * data_srv_handle(void * arg){
 	}
 	printf("count %d ", count_srv);
 	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
+	
+
 	for(int a=0; a<count_srv; a++){
 
 		ret = listen(srv_sock, 0);
@@ -685,7 +675,6 @@ static void * data_srv_handle(void * arg){
 			pthread_exit(&ret);
 		}
 
-
 		if (cli_sockarr[a] == -1) {
 			perror("cli_sock connect ACCEPT fail");
 			close(srv_sock);
@@ -706,10 +695,14 @@ static void * data_srv_handle(void * arg){
 static void * data_cli_handle(void *arg){
 	int con_done[5] = {0, };
 	int all_done=0;
+	printf("\n\n\n\nmake data client \n\n\n\n\n");
+	printf("neighbot %d %d %d %d %d",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3],my_neighbor[4]);
 	while(1){
 		if(all_done==0){
-			for(int a=0;a<5;a++){
+			for(int a=0;a<ROU_NUM;a++){
 				if(my_neighbor[a]==1 && con_done[a]==0){
+					printf("neighbot %d %d %d %d %d",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3],my_neighbor[4]);
+
 					char* send_ip;
 					if(a==0)
 						send_ip="220.149.244.211";
@@ -724,6 +717,8 @@ static void * data_cli_handle(void *arg){
 
 					int make_fd = connect_rou_data(send_ip);
 					data_neighbor_sock[a]=make_fd;
+					
+					printf("connect sock %d \n\n",data_neighbor_sock[a]);
 					if(make_fd==-1){
 						continue;
 					}
@@ -732,7 +727,7 @@ static void * data_cli_handle(void *arg){
 					pthread_create(&data_snd_thread[data_router_num],NULL,data_sndhandle,&make_fd);
 					printf("make data cli \n\n");
 					//data_client_num++;
-					//data_router_num++;
+					data_router_num++;
 				}
 				else{
 					con_done[a]=1;
