@@ -6,9 +6,6 @@ pthread_t data_snd_thread_srv;
 int real_srv_sockfd;
 int real_cli_sockfd[ROU_NUM-1];
 
-
-
-
 static void * data_cli_handle(void * arg);
 static void * data_srv_handle(void * arg);
 
