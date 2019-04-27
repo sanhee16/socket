@@ -1,3 +1,7 @@
+int neighbor_sock[ROU_NUM] = {-1, };
+int neighbor_sock_srv[ROU_NUM] = {-1, };
+
+
 pthread_t data_rcv_thread[100];
 pthread_t data_snd_thread[100];
 pthread_t data_rcv_thread_srv;
@@ -6,14 +10,14 @@ pthread_t data_snd_thread_srv;
 int real_srv_sockfd;
 int real_cli_sockfd[ROU_NUM-1];
 
-
-
-
 static void * data_cli_handle(void * arg);
 static void * data_srv_handle(void * arg);
+static void *data_sndhandle(void * arg);
+static void *data_rcvhandle(void * arg);
 
 pthread_t data_client;
 pthread_t data_server;
+pthread_mutex_t data_lock;
 
 typedef struct msg_data{
 	char snd_ip[15];
@@ -24,14 +28,15 @@ typedef struct msg_data{
 	// this structure size is 400
 }MSG_T;
 
-typedef struct buf{
+typedef struct buf_data{
 	MSG_T recv_buf;
 	int cli_sockfd;
-}BUF;
+}DATA_BUF;
 
-BUF data_buffer;
-data_exist_buf=0;
-
+DATA_BUF data_buffer;
+int data_exist_buf=0;
+int data_router_num=0;
+int connect_rou_data(char*);
 static void * data_srv_connect_handle(void * arg){
 	int port = 4812;
 	int fd_sock;
@@ -42,22 +47,32 @@ static void * data_srv_connect_handle(void * arg){
 	char send_ip[15];
 
 	if(my_num==0){
-		send_ip = "220.149.244.211";
-		real_srv_sockfd = send_ip;
+		//send_ip = "220.149.244.211";
+		strcpy(send_ip,"220.149.244.211");
+		real_srv_sockfd=0;
+		//strcpy(real_srv_sockfd,"220.149.244.211");
+		//real_srv_sockfd = send_ip;
 	}
 	else if(my_num==1){
-		send_ip = "220.149.244.212";
-		real_cli_sockfd[0] = send_ip;
+		strcpy(send_ip,"220.149.244.212");
+		real_srv_sockfd=1;
+		//strcpy(real_srv_sockfd,"220.149.244.212");
+		//send_ip = "220.149.244.212";
+		//real_cli_sockfd[0] = send_ip;
+		//strcpy(real_srv_sockfd,send_ip);
 	}
 	else if(my_num==2){
-		send_ip = "220.149.244.213";
-		real_cli_sockfd[1] = send_ip;
+		strcpy(send_ip,"220.149.244.213");
+		real_srv_sockfd=2;
+		//strcpy(real_srv_sockfd,"220.149.244.213");
+		//strcpy(real_srv_sockfd,send_ip);
+		//send_ip = "220.149.244.213";
+		//real_cli_sockfd[1] = send_ip;
 	}
 	
 	fd_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_sock == -1) {
 		perror("socket");
-		return -1;
 	}
 
 	memset(&addr, 0, sizeof(addr));
@@ -68,10 +83,9 @@ static void * data_srv_connect_handle(void * arg){
 	if(ret == -1){
 		//perror("connect");
 		close(fd_sock);
-		return -1;
 	}
-	pthread_create(&data_rcv_thread_srv,NULL,data_rcvhandle,&fd_sock);
-	pthread_create(&data_snd_thread_srv,NULL,data_sndhandle,&fd_sock);
+	pthread_create(&data_rcv_thread_srv,NULL,data_srv_handle,&fd_sock);
+	pthread_create(&data_snd_thread_srv,NULL,data_cli_handle,&fd_sock);
 
 	while(1);
 	//return fd_sock;
@@ -111,7 +125,6 @@ static void * data_srv_handle(void * arg){
 	pthread_create(&data_client, NULL, data_cli_handle, NULL);
 
 	pthread_mutex_init(&data_lock, NULL);
-	pthread_cond_init(&data_cond, NULL);
 
 	printf("bind\n");
 
@@ -188,17 +201,17 @@ static void * data_cli_handle(void *arg){
 					else if(a==4)
 						send_ip="220.149.244.215";
 
-					int make_fd = connect_rou(send_ip);
+					int make_fd = connect_rou_data(send_ip);
 					//neighbor_sock[a]=make_fd;
 					if(make_fd==-1){
 						continue;
 					}
 					con_done[a]=1;
 
-					pthread_create(&data_snd_thread[router_num],NULL,data_sndhandle,&make_fd);
+					pthread_create(&data_snd_thread[data_router_num],NULL,data_sndhandle,&make_fd);
 					printf("make data cli \n\n");
-					data_client_num++;
-					data_router_num++;
+					//data_client_num++;
+					//data_router_num++;
 				}
 				else{
 					con_done[a]=1;
@@ -216,9 +229,7 @@ static void * data_cli_handle(void *arg){
 }
 
 
-
-
-int connect_rou(char* send_ip){
+int connect_rou_data(char* send_ip){
 	int port = 1721;
 	int fd_sock;
 	int ret;
@@ -291,18 +302,13 @@ static void * data_sndhandle(void *arg){
 	while(1){
 		pthread_mutex_lock(&data_lock);
 
-		if(exist_buf==1){
+		if(data_exist_buf==1){
 			MSG_T snd_msg;
 			memcpy(&snd_msg,&(data_buffer.recv_buf),sizeof(MSG_T));
-			if(data_buffer.recv_buf.check_fin==1){
-				//print_CT();
-				pthread_mutex_unlock(&data_lock);
-				continue;
-			}
 			if(real_srv_sockfd==cli_sockfd){
 				send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 				data_exist_buf=0;
-				memset(&data_buffer,0,sizeof(BUF));
+				memset(&data_buffer,0,sizeof(DATA_BUF));
 				fflush(NULL);
 				pthread_mutex_unlock(&data_lock);
 				continue;
@@ -311,7 +317,7 @@ static void * data_sndhandle(void *arg){
 				if(real_cli_sockfd[a]==cli_sockfd){
 					send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 					data_exist_buf=0;
-					memset(&data_buffer,0,sizeof(BUF));
+					memset(&data_buffer,0,sizeof(DATA_BUF));
 					fflush(NULL);
 					pthread_mutex_unlock(&data_lock);
 					continue;
@@ -345,7 +351,7 @@ static void * data_sndhandle(void *arg){
 			}
 			send(neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
 			data_exist_buf=0;
-			memset(&data_buffer,0,sizeof(BUF));
+			memset(&data_buffer,0,sizeof(DATA_BUF));
 			fflush(NULL);
 		}
 		fflush(NULL);
