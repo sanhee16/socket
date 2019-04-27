@@ -200,7 +200,7 @@ static void * srv_handle(void * arg){
 	printf("count %d ", count_srv);
 	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
 	for(int a=0; a<count_srv; a++){
-
+		while(1){
 		ret = listen(srv_sock, 0);
 		if (ret == -1) {
 			perror("LISTEN stanby mode fail");
@@ -211,7 +211,7 @@ static void * srv_handle(void * arg){
 		cli_sockarr[a] = accept(srv_sock, (struct sockaddr *)NULL, NULL);
 
 		printf("listen %d",a);
-		int ret = -1;
+		//int ret = -1;
 		char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 		/* get peer addr */
 		struct sockaddr peer_addr;
@@ -223,9 +223,11 @@ static void * srv_handle(void * arg){
 				hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
 				NI_NUMERICHOST | NI_NUMERICSERV);
 
+		
 		if(ret != 0){
 			ret = -1;
 			pthread_exit(&ret);
+			continue;
 		}
 
 
@@ -251,15 +253,18 @@ static void * srv_handle(void * arg){
 		else if(*(hbuf+14)=='5'){
 			neighbor_sock_srv[4]=cli_sockarr[a];
 		}
-
+		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
+		router_num++;
+		}
 	}
+	/*
 	for(int a=0;a<count_srv;a++){
 		printf("make thread \n");
 		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
 		router_num++;
 
 	}
-
+*/
 	while(1){
 	}
 
