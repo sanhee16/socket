@@ -97,10 +97,6 @@ char* server_ip = "220.149.244.211";
 char* client_ip[CLI_NUM];
 
 
-
-
-
-
 void print_snd(SND_CT pp){
 	printf("CT \n");
 	for(int a=0;a<ROU_NUM;a++){
@@ -141,8 +137,8 @@ void arr_copy(int(*arr)[ROU_NUM], int(*copy)[ROU_NUM]);
 int connect_rou(char* );
 int main(int argc, char *argv[])
 {
-	client_ip[0]="220.149.244.211";
-	client_ip[1]="220.149.244.212";
+	//client_ip[0]="220.149.244.211";
+	//client_ip[1]="220.149.244.212";
 
 	makeCT();
 	//print_CT();
@@ -702,12 +698,12 @@ static void * data_cli_handle(void *arg){
 	int con_done[5] = {0, };
 	int all_done=0;
 	printf("\n\n\n\nmake data client \n\n\n\n\n");
-	printf("neighbot %d %d %d %d %d",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3],my_neighbor[4]);
+	printf("neighbot %d %d %d %d ",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3]);
 	while(1){
 		if(all_done==0){
 			for(int a=0;a<ROU_NUM;a++){
 				if(my_neighbor[a]==1 && con_done[a]==0){
-					printf("neighbot %d %d %d %d %d",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3],my_neighbor[4]);
+					printf("neighbot %d %d %d %d",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3]);
 
 					char* send_ip;
 					if(a==0)
@@ -758,6 +754,7 @@ int connect_rou_data(char* send_ip){
 	int len;
 	struct sockaddr_in addr;
 
+	while(1){
 	printf("send ip is %s \n",send_ip);
 	fd_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_sock == -1) {
@@ -773,7 +770,11 @@ int connect_rou_data(char* send_ip){
 	if(ret == -1){
 		perror("connect");
 		close(fd_sock);
-		return -1;
+		//return -1;
+	}
+	else{
+	break;
+	}
 	}
 	return fd_sock;
 
@@ -889,45 +890,6 @@ static void * data_sndhandle(void *arg){
 				}
 			}
 			/*
-			   int end_loop=0;
-
-			   if(*(snd_msg.recv_ip + 14) == *(server_ip + 14) && snd_msg.recv_port==4712){
-			//to server
-			if(real_srv_sockfd==cli_sockfd){
-			pthread_mutex_lock(&data_lock);
-			//if this thread is connected to server, then send msg
-			send(cli_sockfd,(char*)&snd_msg, 400, 0);
-			printf("send to server !\n");
-			data_exist_buf=0;
-			memset(&data_buffer,0,sizeof(DATA_BUF));
-			fflush(NULL);
-			pthread_mutex_unlock(&data_lock);
-			continue;
-			}
-			}
-			else{
-			for(int a=0;a<CLI_NUM;a++){
-			if(*(snd_msg.recv_ip + 14) == *(client_ip[a] + 14) && snd_msg.recv_port==4712){
-			//to client
-			if(real_cli_sockfd[a]==cli_sockfd){
-			pthread_mutex_lock(&data_lock);
-			//if this thread is connected to client, then send msg
-			send(cli_sockfd,(char*)&snd_msg, 400, 0);
-			printf("send to client !\n");
-			data_exist_buf=0;
-			memset(&data_buffer,0,sizeof(DATA_BUF));
-			fflush(NULL);
-			pthread_mutex_unlock(&data_lock);
-			end_loop=1;
-			break;
-
-			}
-			}
-			}
-			}
-			if(end_loop==1){
-			continue;
-			}
 			 */
 
 			//other case : to router
@@ -956,28 +918,39 @@ static void * data_sndhandle(void *arg){
 					continue;
 				}
 				if(rt.dest[a]==dest_num){
+					printf("dest node %d \n",rt.dest[a]);
 					printf("next node : %d (%d)\n",rt.next[a],rt.cost[a]);
+					fflush(NULL);
+
 					snd_sockfd=rt.next[a];
 					break;
 				}
 				else{
 					printf("cannot find neigh \n");
+					fflush(NULL);
 				}
 			}
+
+			printf("snd_sockfd is %d my neig? %d \n",snd_sockfd,my_neighbor[snd_sockfd]);
+			printf("neig %d | cli %d \n",data_neighbor_sock[snd_sockfd],cli_sockfd);
+			fflush(NULL);
 
 			pthread_mutex_lock(&data_lock);
 			if(my_neighbor[snd_sockfd]==1 && data_neighbor_sock[snd_sockfd]==cli_sockfd){
 				printf("snd_sockfd is %d \n",snd_sockfd);
 				printf("neig %d | cli %d \n",data_neighbor_sock[snd_sockfd],cli_sockfd);
-
+				fflush(NULL);
 				send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
 				perror("send");
 				printf("send to router! \n");
 				data_exist_buf=0;
 				memset(&data_buffer,0,sizeof(DATA_BUF));
 				fflush(NULL);
+				fflush(stdin);
 			}
 			fflush(NULL);
+			fflush(stdin);
+
 			pthread_mutex_unlock(&data_lock);	
 		}
 
