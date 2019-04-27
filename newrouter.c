@@ -696,7 +696,7 @@ static void * data_srv_handle(void * arg){
 		if (cli_sockarr[a] == -1) {
 			perror("cli_sock connect ACCEPT fail");
 			close(srv_sock);
-			return ;
+			//return 0;
 		}
 		pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sockarr[a]);
 		data_router_num++;
