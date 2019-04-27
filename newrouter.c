@@ -642,8 +642,6 @@ static void * data_srv_handle(void * arg){
 	addr.sin_addr.s_addr = htons (INADDR_ANY);
 	addr.sin_port = htons (port_num);
 
-	int ret1;
-
 	ret1 = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
 	printf("bind data socket\n");
 	if (ret1 == -1) {
