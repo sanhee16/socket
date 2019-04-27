@@ -41,7 +41,7 @@ typedef struct buf_msg{
 pthread_t client_thread;
 
 void main(){
-
+	pthread_mutex_init(&cli_data_lock, NULL);
 	pthread_create(&client_thread,NULL,real_client_handle,NULL);
 	while(1);
 	return ;
@@ -69,8 +69,7 @@ static void * real_client_handle(void * arg){
 	addr.sin_port = htons (port_num);
 
 	ret = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
-
-	if (ret == -1) {
+	if (ret < 0) {
 		perror("BIND error!!");
 		close(srv_sock);
 		return 0;
@@ -114,6 +113,7 @@ static void * real_client_handle(void * arg){
 	printf("make thread!!!!!!!!!\n");
 	pthread_create(&real_cli_rcvthread,NULL,real_cli_rcvhandle,&cli_acc);
 	pthread_create(&real_cli_sndthread,NULL,real_cli_sndhandle,&cli_acc);
+	printf("dd");
 	while(1){
 	}
 }
@@ -123,9 +123,12 @@ static void * real_cli_rcvhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
 	//printf("rcv %d \n",cli_sockfd);
 	int done=0;
-
+	printf("client recv \n");
 	while(1){
-		pthread_mutex_lock(&cli_data_lock);
+		fflush(NULL);
+		//pthread_mutex_lock(&cli_data_lock);
+		printf("recv in!");
+
 		MSG_T get_msg;
 		memset(&(get_msg),0,sizeof(get_msg));
 		int len;
@@ -138,13 +141,17 @@ static void * real_cli_rcvhandle(void *arg){
 		   }
 		   }
 		 */
-		len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
-		if(len<0)
-			continue;
+		printf("wait");
+		len = recv(cli_sockfd, &get_msg, 400, 0);
+		perror("recv");
+		if(len<0){
+			//pthread_mutex_unlock(&cli_data_lock);
+			break;
+		}
 
 		printf("%s",get_msg.msg);
 		fflush(NULL);
-		pthread_mutex_unlock(&cli_data_lock);
+		//pthread_mutex_unlock(&cli_data_lock);
 		//      pthread_mutex_lock(&data_lock);
 		//      pthread_mutex_unlock(&data_lock);
 	}
@@ -155,21 +162,23 @@ static void * real_cli_rcvhandle(void *arg){
 static void * real_cli_sndhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
 
+	printf("client snd \n");
 	size_t getline_len;
 	int ret;
 	int done=0;
 	while(1){
+		fflush(NULL);
 		pthread_mutex_lock(&cli_data_lock);
 		printf("in");
 		MSG_T snd_msg;
-		memset(&snd_msg,0,sizeof(MSG_T));
+		memset(&snd_msg,0,400);
 		//char* read_buffer = (char *)malloc(362);
 		//ret = read(1, read_buffer, 362);
 		ret = read(1, snd_msg.msg, 362);
 		fflush(NULL);
-
-		if (ret == -1) {
+		if(ret == -1) {
 			perror("getline");
+			pthread_mutex_unlock(&cli_data_lock);
 			break;
 		}
 		int len = strlen(snd_msg.msg);

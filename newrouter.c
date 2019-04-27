@@ -166,7 +166,7 @@ static void * srv_handle(void * arg){
 	pthread_mutex_init(&lock, NULL);
 	pthread_cond_init(&cond, NULL);
 
-	printf("bind\n");
+	printf("route bind\n");
 
 	int count_srv=0;
 	for(int a=0;a<ROU_NUM;a++){
@@ -585,7 +585,6 @@ static void * data_srv_connect_handle(void * arg){
 	addr.sin_port = htons (port);
 	inet_pton(AF_INET, send_ip, &addr.sin_addr);
 	ret = connect(fd_sock, (struct sockaddr *)&addr, sizeof(addr));
-	
 	if(ret == -1){
 		perror("connect");
 		close(fd_sock);
@@ -633,7 +632,7 @@ static void * data_srv_handle(void * arg){
 
 	pthread_mutex_init(&data_lock, NULL);
 
-	printf("bind\n");
+	printf("data bind\n");
 
 	int count_srv=0;
 	for(int a=0;a<ROU_NUM;a++){
