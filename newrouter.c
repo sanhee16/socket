@@ -638,9 +638,11 @@ static void * data_srv_handle(void * arg){
 	addr.sin_addr.s_addr = htons (INADDR_ANY);
 	addr.sin_port = htons (port_num);
 
-	ret = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
+	int ret1;
+
+	ret1 = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
 	printf("bind data socket\n");
-	if (ret == -1) {
+	if (ret1 == -1) {
 		perror("BIND error!!");
 		close(srv_sock);
 		return 0;
@@ -659,11 +661,12 @@ static void * data_srv_handle(void * arg){
 	printf("count %d ", count_srv);
 	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
 
-
 	for(int a=0; a<count_srv; a++){
 
-		ret = listen(srv_sock, 0);
-		if (ret == -1) {
+	while(1){
+
+		ret1 = listen(srv_sock, 0);
+		if (ret1 == -1) {
 			perror("LISTEN stanby mode fail");
 			close(srv_sock);
 			return 0;
@@ -687,20 +690,27 @@ static void * data_srv_handle(void * arg){
 		if(ret != 0){
 			ret = -1;
 			pthread_exit(&ret);
+			continue;
 		}
 
 		if (cli_sockarr[a] == -1) {
 			perror("cli_sock connect ACCEPT fail");
 			close(srv_sock);
+			return ;
 		}
+		pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sockarr[a]);
+		data_router_num++;
+
 	}
+	}
+	/*
 	for(int a=0;a<count_srv;a++){
 		printf("make thread \n");
 		pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sockarr[a]);
 		data_router_num++;
 
 	}
-
+*/
 	while(1){
 	}
 }
