@@ -201,9 +201,9 @@ static void * srv_handle(void * arg){
 	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
 
 
-	int a=0;
-	//for(int a=0; a<count_srv; a++){
-	while(1){
+	//int a=0;
+	for(int a=0; a<count_srv; a++){
+	//while(1){
 		ret1= listen(srv_sock, 0);
 		if (ret1 == -1) {
 			perror("LISTEN stanby mode fail");
@@ -261,17 +261,17 @@ static void * srv_handle(void * arg){
 		a++;
 
 	}
-	/*
+	
 	   for(int a=0;a<count_srv;a++){
 	   printf("make thread \n");
 	   pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
 	   router_num++;
 
 	   }
-	 */
+	/* 
 	while(1){
 	}
-
+*/
 }
 
 static void * cli_handle(void *arg){
@@ -665,9 +665,9 @@ static void * data_srv_handle(void * arg){
 	printf("count %d ", count_srv);
 	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
 
-	//for(int a=0; a<count_srv; a++){
-	int a=0;
-	while(1){
+	for(int a=0; a<count_srv; a++){
+	//int a=0;
+	//while(1){
 
 		ret1 = listen(srv_sock, 0);
 		if (ret1 == -1) {
@@ -706,16 +706,16 @@ static void * data_srv_handle(void * arg){
 		data_router_num++;
 		a++;
 	}
-	/*
 	   for(int a=0;a<count_srv;a++){
 	   printf("make thread \n");
 	   pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sockarr[a]);
 	   data_router_num++;
 
 	   }
-	 */
-	while(1){
+	/*
+	   while(1){
 	}
+	*/
 }
 
 
