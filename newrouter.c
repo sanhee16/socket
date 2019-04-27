@@ -879,7 +879,7 @@ static void * data_sndhandle(void *arg){
 
 			}
 			printf("recv ip is %s \n",snd_msg.recv_ip);
-			pritnf("compare %d my num %d \n\n",compare,my_num);
+			printf("compare %c my num %d \n\n",compare,my_num);
 			if(compare==my_num){
 				if(real_cli_srv_sockfd==cli_sockfd){
 					pthread_mutex_lock(&data_lock);
