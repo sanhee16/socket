@@ -568,11 +568,11 @@ static void * data_srv_connect_handle(void * arg){
 		strcpy(send_ip,"220.149.244.211");
 		real_srv_sockfd=fd_sock;
 	}
-	else if(my_num==1){
+	else if(my_num==2){
 		strcpy(send_ip,"220.149.244.212");
 		real_cli_sockfd[0]=fd_sock;
 	}
-	else if(my_num==2){
+	else if(my_num==1){
 		strcpy(send_ip,"220.149.244.213");
 		real_cli_sockfd[1]=fd_sock;
 	}
@@ -751,6 +751,7 @@ int connect_rou_data(char* send_ip){
 	int len;
 	struct sockaddr_in addr;
 
+	printf("send ip is %s \n",send_ip);
 	fd_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_sock == -1) {
 		perror("socket");
