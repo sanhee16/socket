@@ -576,7 +576,7 @@ static void * data_srv_connect_handle(void * arg){
 		real_cli_srv_sockfd=fd_sock;
 		//real_cli_sockfd[0]=fd_sock;
 	}
-	else if(my_num==1){
+	else if(my_num==2){
 		strcpy(send_ip,"220.149.244.213");
 		real_cli_srv_sockfd=fd_sock;
 
