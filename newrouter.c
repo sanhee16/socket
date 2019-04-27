@@ -13,6 +13,8 @@
 
 #include "fileopen.h"
 #include "making_rt.h"
+#define CLI_NUM 2
+
 //#include "data_handle_router.h"
 
 pthread_t tids[100];
@@ -20,7 +22,7 @@ pthread_t rcv_thread[100];
 pthread_t snd_thread[100];
 pthread_t server;
 pthread_t client;
-pthread_t making_rr[ROU_NUM];
+pthread_t making_rr;
 pthread_t cli_srv_connect_thread;
 int router_num;
 int exist_buf=0;
@@ -32,7 +34,9 @@ int data_neighbor_sock[ROU_NUM]={-1, };
 int client_num;
 int is_fin = 0;
 int close_cli;
-int make_table[ROU_NUM];
+int fin_costtable[ROU_NUM]={0,};
+
+
 
 typedef struct snd_ct{
 	int CT[ROU_NUM][ROU_NUM];
@@ -84,6 +88,15 @@ int data_exist_buf=0;
 int data_router_num=0;
 int connect_rou_data(char*);
 
+
+char* server_ip = "220.149.244.211";
+char* client_ip[CLI_NUM];
+
+
+
+
+
+
 void print_snd(SND_CT pp){
 	printf("CT \n");
 	for(int a=0;a<ROU_NUM;a++){
@@ -124,10 +137,15 @@ void arr_copy(int(*arr)[ROU_NUM], int(*copy)[ROU_NUM]);
 int connect_rou(char* );
 int main(int argc, char *argv[])
 {
+	client_ip[0]="220.149.244.212";
+	client_ip[1]="220.149.244.213";
+
 	makeCT();
 	//print_CT();
 	pthread_create(&server, NULL, srv_handle, NULL);
 	pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
+	pthread_create(&making_rr,NULL,RT_handler,NULL);
+
 	while(1){
 	}
 }
@@ -434,46 +452,28 @@ static void * sndhandle(void *arg){
 	first.finish=0;
 	send(cli_sockfd, (char*)&first, sizeof(SND_CT), 0);
 	//perror("send");
-
 	//RT_handler(&done);
-	pthread_create(&making_rr[my_num],NULL,RT_handler,&done);
+
+	//pthread_create(&making_rr[my_num],NULL,RT_handler,&done);
 	while(1){
 		pthread_mutex_lock(&lock);
-
-		if(done==1){
-			if(make_table[my_num]==0){
-				make_table[my_num]=1;
-			}
-		}
 		if(exist_buf==1){
 			SND_CT snd_ct;
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
-			if(buffer.recv_buf.check_fin==1){
-				if(make_table[my_num]==0){
-					make_table[my_num]=1;
-					//fin_table[my_num]=1;
-				}
-				//buf_count--;
-				//print_CT();
-				/*
-				   if(make_table[my_num]==0){
-				   make_table[my_num]=1;
-				   pthread_create(&making_rr[my_num],NULL,RT_handler,NULL);
-				//create hanler : data;
-
-
-
-				}
-				 */
-				/*
-				   if(buf_count==0){
-				   exist_buf=0;
-				   memset(&buffer,0,sizeof(buffer));
-				   }*/
+			if(done==1){
+				make_table=1;
 				pthread_mutex_unlock(&lock);
 				continue;
 			}
-
+			/*
+			   if(buffer.recv_buf.check_fin==1){
+			   if(make_table==0){
+			   make_table=1;
+			   }
+			   pthread_mutex_unlock(&lock);
+			   continue;
+			   }
+			 */
 			int snd_sockfd = buffer.cli_sockfd;
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
@@ -495,6 +495,8 @@ static void * sndhandle(void *arg){
 			//print_CT();
 			for(int a=0;a<ROU_NUM;a++){
 				if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
+					//fin_costtable[a]=1;
+
 					arr_copy(snd_ct.CT,CT);
 					snd_ct.visit[my_num]=1;
 					for(int x=0;x<ROU_NUM;x++){
@@ -507,6 +509,7 @@ static void * sndhandle(void *arg){
 						}
 						snd_ct.finish=1;
 					}
+					snd_ct.check_finish[my_num]=1;
 					if(buffer.recv_buf.finish==1){
 						for(int x=0;x<ROU_NUM;x++){
 							if(snd_ct.check_finish[x]==1){
@@ -522,6 +525,16 @@ static void * sndhandle(void *arg){
 						}
 					}
 
+					if(done==1){
+						if(make_table==0){
+							make_table=1;
+							//pthread_create(&making_rr,NULL,RT_handler,NULL);
+
+							pthread_mutex_unlock(&lock);
+							break;
+						}
+					}
+
 					int len = sizeof(snd_ct);
 					send(neighbor_sock[a],(char*)&snd_ct, sizeof(SND_CT), 0);
 
@@ -530,7 +543,6 @@ static void * sndhandle(void *arg){
 						exist_buf=0;
 						memset(&buffer,0,sizeof(buffer));
 					}
-
 				}
 			}
 		}
@@ -568,11 +580,11 @@ static void * data_srv_connect_handle(void * arg){
 	}
 	else if(my_num==1){
 		strcpy(send_ip,"220.149.244.212");
-		real_cli_sockfd[0]=fd_sock;
+		real_cli_sockfd[1]=fd_sock;
 	}
 	else if(my_num==2){
 		strcpy(send_ip,"220.149.244.213");
-		real_cli_sockfd[1]=fd_sock;
+		real_cli_sockfd[0]=fd_sock;
 	}
 
 	if (fd_sock == -1) {
@@ -753,7 +765,7 @@ int connect_rou_data(char* send_ip){
 	inet_pton(AF_INET, send_ip, &addr.sin_addr);
 	ret = connect(fd_sock, (struct sockaddr *)&addr, sizeof(addr));
 	if(ret == -1){
-		//perror("connect");
+		perror("connect");
 		close(fd_sock);
 		return -1;
 	}
@@ -773,15 +785,15 @@ static void * data_rcvhandle(void *arg){
 
 		int len;
 		int rcv_sock;
-/*
-		for(int x=0;x<ROU_NUM;x++){
-			printf("data: neighbor? %d \n",data_neighbor_sock[x]);
-			if(data_neighbor_sock[x]==cli_sockfd){
-				rcv_sock=x;
-				break;
-			}
-		}
-*/
+		/*
+		   for(int x=0;x<ROU_NUM;x++){
+		   printf("data: neighbor? %d \n",data_neighbor_sock[x]);
+		   if(data_neighbor_sock[x]==cli_sockfd){
+		   rcv_sock=x;
+		   break;
+		   }
+		   }
+		 */
 		len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 		if(len<0)
 			continue;
@@ -807,39 +819,73 @@ static void * data_sndhandle(void *arg){
 	int ret;
 	int done=0;
 	while(1){
+		if(rt_done==1){
+			break;
+		}
+	}
+	/*	while(1){
 		pthread_mutex_lock(&data_lock);
+		if(make_table==1){
+		pthread_mutex_unlock(&data_lock);
+		pthread_create(&making_rr,NULL,RT_handler,NULL);
+		break;
+		}
+		pthread_mutex_unlock(&data_lock);
+		}
+	 */
+	for(int a=0;a<ROU_NUM;a++){
+		printf("RT \n");
+		printf("%d %d %d ",rt.dest[a],rt.next[a],rt.cost[a]);
+	}
+	print_CT();
+	while(1){
+
+		//pthread_mutex_lock(&data_lock);
 		if(data_exist_buf==1){
 			MSG_T snd_msg;
 			memcpy(&snd_msg,&(data_buffer.recv_buf),sizeof(MSG_T));
-			
-			if(real_srv_sockfd==cli_sockfd){
-				send(cli_sockfd,(char*)&snd_msg, 400, 0);
-				perror("send");
-				printf("send to server !\n");
-				data_exist_buf=0;
-				memset(&data_buffer,0,sizeof(DATA_BUF));
-				fflush(NULL);
-				pthread_mutex_unlock(&data_lock);
-				continue;
-			}
-			int loop=0;
-			for(int a=0;a<ROU_NUM-1;a++){
-				if(real_cli_sockfd[a]==cli_sockfd && real_cli_sockfd[a]!=0){
-					printf("send to client !\n");
+
+			int end_loop=0;
+			if(*(snd_msg.recv_ip + 14) == *(server_ip + 14) && snd_msg.recv_port==4712){
+				//to server
+				if(real_srv_sockfd==cli_sockfd){
+					pthread_mutex_lock(&data_lock);
+					//if this thread is connected to server, then send msg
 					send(cli_sockfd,(char*)&snd_msg, 400, 0);
+					perror("send");
+					printf("send to server !\n");
 					data_exist_buf=0;
 					memset(&data_buffer,0,sizeof(DATA_BUF));
 					fflush(NULL);
-					loop=1;
 					pthread_mutex_unlock(&data_lock);
-					break;
+					continue;
 				}
 			}
-			if(loop==1){
+			else{
+				for(int a=0;a<CLI_NUM;a++){
+					if(*(snd_msg.recv_ip + 14) == *(client_ip[a] + 14) && snd_msg.recv_port==4712){
+						//to client
+						if(real_cli_sockfd[a]==cli_sockfd){
+							pthread_mutex_lock(&data_lock);
+							//if this thread is connected to client, then send msg
+							send(cli_sockfd,(char*)&snd_msg, 400, 0);
+							perror("send");
+							printf("send to server !\n");
+							data_exist_buf=0;
+							memset(&data_buffer,0,sizeof(DATA_BUF));
+							fflush(NULL);
+							pthread_mutex_unlock(&data_lock);
+							end_loop=1;
+							break;
+
+						}
+					}
+				}
+			}
+			if(end_loop==1){
 				continue;
 			}
-
-			
+			//other case : to router
 			int snd_sockfd=-1;
 			//check routing table (rt) -> set snd_sockfd
 			int dest_num=-1;
@@ -860,16 +906,26 @@ static void * data_sndhandle(void *arg){
 			}
 
 			for(int a=0;a<ROU_NUM;a++){
+				if(a==my_num){
+					//do not check mine
+					continue;
+				}
 				if(rt.dest[a]==dest_num){
+					printf("next node : %d (%d)\n",rt.next[a],rt.cost[a]);
 					snd_sockfd=rt.next[a];
 					break;
 				}
+				else{
+					printf("cannot find neigh \n");
+				}
 			}
-			send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
-			perror("send");
-			data_exist_buf=0;
-			memset(&data_buffer,0,sizeof(DATA_BUF));
-			fflush(NULL);
+			if(data_neighbor_sock[snd_sockfd]==cli_sockfd){
+				send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
+				perror("send");
+				data_exist_buf=0;
+				memset(&data_buffer,0,sizeof(DATA_BUF));
+				fflush(NULL);
+			}
 		}
 		fflush(NULL);
 		pthread_mutex_unlock(&data_lock);
