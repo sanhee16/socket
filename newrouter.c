@@ -850,7 +850,7 @@ static void * data_sndhandle(void *arg){
 			MSG_T snd_msg;
 			memcpy(&snd_msg,&(data_buffer.recv_buf),sizeof(MSG_T));
 
-			if(snd_msg.recv_port==4712 && (snd_msg.recv_ip+14)==my_num+1+32){
+			if(snd_msg.recv_port==4712 && *(snd_msg.recv_ip+14)==my_num+1+32){
 				if(real_cli_srv_sockfd==cli_sockfd){
 					pthread_mutex_lock(&data_lock);
 					//if this thread is connected to server, then send msg
