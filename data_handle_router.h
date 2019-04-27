@@ -1,7 +1,6 @@
 int neighbor_sock[ROU_NUM] = {-1, };
 int neighbor_sock_srv[ROU_NUM] = {-1, };
 
-
 pthread_t data_rcv_thread[100];
 pthread_t data_snd_thread[100];
 pthread_t data_rcv_thread_srv;

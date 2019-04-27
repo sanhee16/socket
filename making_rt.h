@@ -11,6 +11,7 @@ route_table rt;
 
 void print_CT();
 
+
 static void * RT_handler(void *arg){
 	//makeCT();
 	print_CT();
