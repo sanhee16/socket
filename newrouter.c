@@ -147,11 +147,11 @@ int main(int argc, char *argv[])
 	//pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 	pthread_create(&making_rr,NULL,RT_handler,NULL);
 
-	
+
 	if(my_num==0 || my_num==1 || my_num==2){
 		pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 	}
-	
+
 	while(1){
 	}
 }
@@ -199,11 +199,11 @@ static void * srv_handle(void * arg){
 	}
 	printf("count %d ", count_srv);
 	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
-	
-	
+
+
 	int a=0;
 	//for(int a=0; a<count_srv; a++){
-		while(1){
+	while(1){
 		ret1= listen(srv_sock, 0);
 		if (ret1 == -1) {
 			perror("LISTEN stanby mode fail");
@@ -226,7 +226,7 @@ static void * srv_handle(void * arg){
 				hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
 				NI_NUMERICHOST | NI_NUMERICSERV);
 
-		
+
 		if(ret != 0){
 			ret = -1;
 			pthread_exit(&ret);
@@ -259,16 +259,16 @@ static void * srv_handle(void * arg){
 		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
 		router_num++;
 		a++;
-		
-	}
-	/*
-	for(int a=0;a<count_srv;a++){
-		printf("make thread \n");
-		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
-		router_num++;
 
 	}
-*/
+	/*
+	   for(int a=0;a<count_srv;a++){
+	   printf("make thread \n");
+	   pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
+	   router_num++;
+
+	   }
+	 */
 	while(1){
 	}
 
@@ -343,7 +343,7 @@ int connect_rou(char* send_ip){
 	inet_pton(AF_INET, send_ip, &addr.sin_addr);
 	ret = connect(fd_sock, (struct sockaddr *)&addr, sizeof(addr));
 	if(ret == -1){
-		//perror("connect");
+		perror("connect");
 		close(fd_sock);
 		return -1;
 	}
@@ -458,6 +458,7 @@ static void * sndhandle(void *arg){
 	int ret;
 	int done=0;
 	SND_CT first;
+	printf("routing ssend \n");
 	print_CT();
 
 	int loop_onetime=0;
@@ -549,8 +550,8 @@ static void * sndhandle(void *arg){
 					}
 				}
 			}
-		fflush(NULL);
-		pthread_mutex_unlock(&lock);
+			fflush(NULL);
+			pthread_mutex_unlock(&lock);
 
 		}
 	}
@@ -603,7 +604,7 @@ static void * data_srv_connect_handle(void * arg){
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons (port);
 	inet_pton(AF_INET, send_ip, &addr.sin_addr);
-	
+
 	//connect
 	ret = connect(fd_sock, (struct sockaddr *)&addr, sizeof(addr));
 	if(ret == -1){
@@ -677,7 +678,7 @@ static void * data_srv_handle(void * arg){
 
 		cli_sockarr[a] = accept(srv_sock, (struct sockaddr *)NULL, NULL);
 
-		printf("listen %d",a);
+		printf("data listen %d",a);
 		int ret = -1;
 		char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 		/* get peer addr */
@@ -706,13 +707,13 @@ static void * data_srv_handle(void * arg){
 		a++;
 	}
 	/*
-	for(int a=0;a<count_srv;a++){
-		printf("make thread \n");
-		pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sockarr[a]);
-		data_router_num++;
+	   for(int a=0;a<count_srv;a++){
+	   printf("make thread \n");
+	   pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sockarr[a]);
+	   data_router_num++;
 
-	}
-*/
+	   }
+	 */
 	while(1){
 	}
 }
@@ -820,7 +821,7 @@ static void * data_rcvhandle(void *arg){
 		   break;
 		   }
 		   }
-		*/
+		 */
 		len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 		if(len<0)
 			continue;
