@@ -813,23 +813,31 @@ static void * data_sndhandle(void *arg){
 			memcpy(&snd_msg,&(data_buffer.recv_buf),sizeof(MSG_T));
 			
 			if(real_srv_sockfd==cli_sockfd){
-				send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+				send(cli_sockfd,(char*)&snd_msg, 400, 0);
+				perror("send");
+				printf("send to server !\n");
 				data_exist_buf=0;
 				memset(&data_buffer,0,sizeof(DATA_BUF));
 				fflush(NULL);
 				pthread_mutex_unlock(&data_lock);
 				continue;
 			}
+			int loop=0;
 			for(int a=0;a<ROU_NUM-1;a++){
 				if(real_cli_sockfd[a]==cli_sockfd){
-					send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+					send(cli_sockfd,(char*)&snd_msg, 400, 0);
 					data_exist_buf=0;
 					memset(&data_buffer,0,sizeof(DATA_BUF));
 					fflush(NULL);
+					loop=1;
 					pthread_mutex_unlock(&data_lock);
-					continue;
+					break;
 				}
+							
 			}
+			if(loop==1)
+				continue;
+
 
 			int snd_sockfd=-1;
 			//check routing table (rt) -> set snd_sockfd

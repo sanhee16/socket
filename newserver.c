@@ -124,10 +124,7 @@ static void * real_server_handle(void * arg){
 		perror("cli_sock connect ACCEPT fail");
 		close(srv_sock);
 	}
-	while(1){
-		if(fin_table[my_num]==1)
-			break;
-	}
+	
 	pthread_create(&real_srv_rcvthread,NULL,real_srv_rcvhandle,&cli_acc);
 	pthread_create(&real_srv_sndthread,NULL,real_srv_sndhandle,&cli_acc);
 	while(1){
