@@ -426,6 +426,7 @@ static void * rcvhandle(void *arg){
 		}
 		if(get_ct.check_fin==1){
 			done=1;
+			//print_CT();
 			//continue;
 		}
 		get_ct.visit[my_num]=1;
@@ -538,9 +539,10 @@ static void * sndhandle(void *arg){
 					}
 				}
 			}
-		}
 		fflush(NULL);
 		pthread_mutex_unlock(&lock);
+
+		}
 	}
 	while(1);
 }
