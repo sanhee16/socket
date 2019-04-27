@@ -189,7 +189,12 @@ static void * real_cli_sndhandle(void *arg){
 			continue;
 		}
 		printf("send %s (<-cliemt)",snd_msg.msg);
-		strcpy(snd_msg.snd_ip,"220.149.244.212");
+		if(my_num==1){
+			strcpy(snd_msg.snd_ip,"220.149.244.212");
+		}
+		if(my_num==2){
+			strcpy(snd_msg.snd_ip,"220.149.244.213");
+		}
 		strcpy(snd_msg.recv_ip,"220.149.244.211");
 		//snd_msg.snd_ip="220.149.244.212";
 		//snd_msg.recv_ip="220.149.244.211";
