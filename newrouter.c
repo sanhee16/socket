@@ -762,7 +762,6 @@ int connect_rou_data(char* send_ip){
 	int len;
 	struct sockaddr_in addr;
 
-	while(1){
 	printf("send ip is %s \n",send_ip);
 	fd_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_sock == -1) {
@@ -778,11 +777,7 @@ int connect_rou_data(char* send_ip){
 	if(ret == -1){
 		perror("connect");
 		close(fd_sock);
-		//return -1;
-	}
-	else{
-	break;
-	}
+		return -1;
 	}
 	return fd_sock;
 
