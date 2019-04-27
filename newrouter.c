@@ -752,6 +752,7 @@ static void * data_cli_handle(void *arg){
 			}
 		}
 	}
+	while(1);
 }
 
 int connect_rou_data(char* send_ip){
@@ -807,7 +808,7 @@ static void * data_rcvhandle(void *arg){
 		   break;
 		   }
 		   }
-		 */
+		*/
 		len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 		if(len<0)
 			continue;
