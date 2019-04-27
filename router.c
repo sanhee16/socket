@@ -90,7 +90,6 @@ int main(int argc, char *argv[])
 	makeCT();
 	//print_CT();
 	pthread_create(&server, NULL, srv_handle, NULL);
-	
 	pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 	while(1){
 	}

@@ -38,7 +38,7 @@ int data_exist_buf=0;
 int data_router_num=0;
 int connect_rou_data(char*);
 static void * data_srv_connect_handle(void * arg){
-	int port = 4812;
+	int port = 4712;
 	int fd_sock;
 	int ret;
 	int len;
