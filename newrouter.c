@@ -199,6 +199,9 @@ static void * srv_handle(void * arg){
 	}
 	printf("count %d ", count_srv);
 	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
+	
+	
+	
 	for(int a=0; a<count_srv; a++){
 		while(1){
 		ret1= listen(srv_sock, 0);
@@ -255,6 +258,7 @@ static void * srv_handle(void * arg){
 		}
 		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
 		router_num++;
+		break;
 		}
 	}
 	/*
@@ -700,7 +704,7 @@ static void * data_srv_handle(void * arg){
 		}
 		pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sockarr[a]);
 		data_router_num++;
-
+	break;
 	}
 	}
 	/*
