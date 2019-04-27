@@ -418,7 +418,7 @@ static void * sndhandle(void *arg){
 				}
 				//buf_count--;
 				printf("\n\n-------------client finish----------------------\n\n");
-				print_CT();
+				//print_CT();
 				/*
 				   if(make_table[my_num]==0){
 				   make_table[my_num]=1;

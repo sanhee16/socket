@@ -278,7 +278,7 @@ static void * data_rcvhandle(void *arg){
 		if(len<0)
 			continue;
 		pthread_mutex_lock(&data_lock);
-
+		printf("data rcv : %s ",get_msg.msg);
 		memcpy(&(data_buffer.recv_buf),&get_msg,sizeof(MSG_T));
 		data_buffer.cli_sockfd = rcv_sock;
 
