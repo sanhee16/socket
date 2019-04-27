@@ -147,9 +147,11 @@ int main(int argc, char *argv[])
 	//pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 	pthread_create(&making_rr,NULL,RT_handler,NULL);
 
+	
 	if(my_num==0 || my_num==1 || my_num==2){
 		pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 	}
+	
 	while(1){
 	}
 }
@@ -562,6 +564,7 @@ static void * data_srv_connect_handle(void * arg){
 
 	fd_sock = socket(AF_INET, SOCK_STREAM, 0);
 
+	real_cli_srv_sockfd=-1;
 	if(my_num==0){
 		strcpy(send_ip,"220.149.244.211");
 		real_cli_srv_sockfd=fd_sock;
@@ -588,6 +591,8 @@ static void * data_srv_connect_handle(void * arg){
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons (port);
 	inet_pton(AF_INET, send_ip, &addr.sin_addr);
+	
+	//connect
 	ret = connect(fd_sock, (struct sockaddr *)&addr, sizeof(addr));
 	if(ret == -1){
 		perror("connect");
@@ -873,6 +878,8 @@ static void * data_sndhandle(void *arg){
 					break;
 
 			}
+			printf("recv ip is %s \n",snd_msg.recv_ip);
+			pritnf("compare %d my num %d \n\n",compare,my_num);
 			if(compare==my_num){
 				if(real_cli_srv_sockfd==cli_sockfd){
 					pthread_mutex_lock(&data_lock);
