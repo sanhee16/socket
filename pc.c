@@ -90,7 +90,6 @@ int main(int argc, char *argv[])
 	makeCT();
 	//print_CT();
 	pthread_create(&server, NULL, srv_handle, NULL);
-	pthread_create(&client, NULL, cli_handle, NULL);
 
 	while(1){
 	}
@@ -125,6 +124,8 @@ static void * srv_handle(void * arg){
 		close(srv_sock);
 		return 0;
 	}
+	pthread_create(&client, NULL, cli_handle, NULL);
+
 	pthread_mutex_init(&lock, NULL);
 	pthread_cond_init(&cond, NULL);
 
@@ -403,7 +404,6 @@ static void * sndhandle(void *arg){
 		pthread_mutex_lock(&lock);
 
 		if(done==1){
-			printf("done ");
 			if(make_table[my_num]==0){
 				make_table[my_num]=1;
 			}
@@ -411,13 +411,11 @@ static void * sndhandle(void *arg){
 		if(exist_buf==1){
 			SND_CT snd_ct;
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
-			printf("---------snd- %d ---------\n",cli_sockfd);
 			if(buffer.recv_buf.check_fin==1){
 				if(make_table[my_num]==0){
 					make_table[my_num]=1;
-					int arg = 1;
+					//fin_table[my_num]=1;
 				}
-
 				//buf_count--;
 				printf("\n\n-------------client finish----------------------\n\n");
 				print_CT();

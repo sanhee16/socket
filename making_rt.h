@@ -11,7 +11,6 @@ route_table rt;
 
 void print_CT();
 
-
 static void * RT_handler(void *arg){
 	//makeCT();
 	print_CT();
@@ -76,24 +75,29 @@ static void * RT_handler(void *arg){
 				}
 			}
 		}
-		printf("\n\n------result------\n\n");
+	//	printf("\n\n------result------\n\n");
 		for(int a=0;a<ROU_NUM;a++){
-			printf("%d -> %d : %d",source, a, d[a]);
-			printf(" next %d \n",edge[a]);
+			//printf("%d -> %d : %d",source, a, d[a]);
+			//printf(" next %d \n",edge[a]);
 		}
-		printf("\n\n------routing table------\n\n");
-		printf(" dest next cost \n");
+	//	printf("\n\n------routing table------\n\n");
+	//	printf(" dest next cost \n");
 		for(int a=0;a<ROU_NUM;a++){
 			if(a==my_num)
 				continue;
-			printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
-			printf("\n");
+			//printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
+			//printf("\n");
 		}
 
 		if(fin_table[my_num]==1){
 			printf("fin table?? ");
-			break;
+			for(int a=0;a<ROU_NUM;a++){
+				printf("%d -> %d : %d",source, a, d[a]);
+				printf(" next %d \n",edge[a]);
+			}
+
 		}
+
 	}
 	return 0;
 }
