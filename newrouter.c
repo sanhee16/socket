@@ -824,7 +824,8 @@ static void * data_sndhandle(void *arg){
 			}
 			int loop=0;
 			for(int a=0;a<ROU_NUM-1;a++){
-				if(real_cli_sockfd[a]==cli_sockfd){
+				if(real_cli_sockfd[a]==cli_sockfd && real_cli_sockfd[a]!=0){
+					printf("send to client !\n");
 					send(cli_sockfd,(char*)&snd_msg, 400, 0);
 					data_exist_buf=0;
 					memset(&data_buffer,0,sizeof(DATA_BUF));
@@ -833,12 +834,12 @@ static void * data_sndhandle(void *arg){
 					pthread_mutex_unlock(&data_lock);
 					break;
 				}
-							
 			}
-			if(loop==1)
+			if(loop==1){
 				continue;
+			}
 
-
+			
 			int snd_sockfd=-1;
 			//check routing table (rt) -> set snd_sockfd
 			int dest_num=-1;
@@ -865,6 +866,7 @@ static void * data_sndhandle(void *arg){
 				}
 			}
 			send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
+			perror("send");
 			data_exist_buf=0;
 			memset(&data_buffer,0,sizeof(DATA_BUF));
 			fflush(NULL);
