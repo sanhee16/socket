@@ -1,6 +1,7 @@
 pthread_t real_cli_rcvthread;
 pthread_t real_cli_sndthread;
 
+
 static void *real_cli_rcvhandle(void * arg);
 static void *real_cli_sndhandle(void * arg);
 
