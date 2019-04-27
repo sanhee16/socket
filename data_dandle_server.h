@@ -21,9 +21,9 @@ typedef struct msg_data{
 typedef struct buf{
 	MSG_T recv_buf;
 	int cli_sockfd;
-}BUF;
+}DATA_BUF;
 
-BUF srv_data_buffer;
+DATA_BUF srv_data_buffer;
 int srv_data_exist_buf=0;
 
 
@@ -183,7 +183,7 @@ static void * real_srv_sndhandle(void *arg){
 				}
 			}
 			srv_data_exist_buf=0;
-			memset(&srv_data_buffer,0,sizeof(BUF));
+			memset(&srv_data_buffer,0,sizeof(DATA_BUF));
 			fflush(NULL);
 			//check routing table (rt) -> set snd_sockfd
 
