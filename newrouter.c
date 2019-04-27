@@ -28,7 +28,7 @@ int buf_count=0;
 
 int neighbor_sock[ROU_NUM] = {-1, };
 int neighbor_sock_srv[ROU_NUM] = {-1, };
-
+int data_neighbor_sock[ROU_NUM]={-1, };
 int client_num;
 int is_fin = 0;
 int close_cli;
@@ -561,31 +561,21 @@ static void * data_srv_connect_handle(void * arg){
 
 	char send_ip[15];
 
+	fd_sock = socket(AF_INET, SOCK_STREAM, 0);
+
 	if(my_num==0){
-		//send_ip = "220.149.244.211";
 		strcpy(send_ip,"220.149.244.211");
-		real_srv_sockfd=0;
-		//strcpy(real_srv_sockfd,"220.149.244.211");
-		//real_srv_sockfd = send_ip;
+		real_srv_sockfd=fd_sock;
 	}
 	else if(my_num==1){
 		strcpy(send_ip,"220.149.244.212");
-		real_srv_sockfd=1;
-		//strcpy(real_srv_sockfd,"220.149.244.212");
-		//send_ip = "220.149.244.212";
-		//real_cli_sockfd[0] = send_ip;
-		//strcpy(real_srv_sockfd,send_ip);
+		real_srv_sockfd=fd_sock;
 	}
 	else if(my_num==2){
 		strcpy(send_ip,"220.149.244.213");
-		real_srv_sockfd=2;
-		//strcpy(real_srv_sockfd,"220.149.244.213");
-		//strcpy(real_srv_sockfd,send_ip);
-		//send_ip = "220.149.244.213";
-		//real_cli_sockfd[1] = send_ip;
+		real_srv_sockfd=fd_sock;
 	}
 
-	fd_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_sock == -1) {
 		perror("socket");
 	}
@@ -596,8 +586,9 @@ static void * data_srv_connect_handle(void * arg){
 	addr.sin_port = htons (port);
 	inet_pton(AF_INET, send_ip, &addr.sin_addr);
 	ret = connect(fd_sock, (struct sockaddr *)&addr, sizeof(addr));
+	
 	if(ret == -1){
-		//perror("connect");
+		perror("connect");
 		close(fd_sock);
 	}
 	printf("make client connect");
@@ -719,7 +710,7 @@ static void * data_cli_handle(void *arg){
 						send_ip="220.149.244.215";
 
 					int make_fd = connect_rou_data(send_ip);
-					neighbor_sock[a]=make_fd;
+					data_neighbor_sock[a]=make_fd;
 					if(make_fd==-1){
 						continue;
 					}
@@ -744,7 +735,6 @@ static void * data_cli_handle(void *arg){
 		}
 	}
 }
-
 
 int connect_rou_data(char* send_ip){
 	int port = 1721;
@@ -786,8 +776,8 @@ static void * data_rcvhandle(void *arg){
 		int len;
 		int rcv_sock;
 		for(int x=0;x<ROU_NUM;x++){
-			printf("data: neighbor? %d \n",neighbor_sock[x]);
-			if(neighbor_sock[x]==cli_sockfd){
+			printf("data: neighbor? %d \n",data_neighbor_sock[x]);
+			if(data_neighbor_sock[x]==cli_sockfd){
 				rcv_sock=x;
 				break;
 			}
@@ -796,7 +786,9 @@ static void * data_rcvhandle(void *arg){
 		len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 		if(len<0)
 			continue;
+
 		pthread_mutex_lock(&data_lock);
+
 		printf("data rcv : %s ",get_msg.msg);
 		memcpy(&(data_buffer.recv_buf),&get_msg,sizeof(MSG_T));
 		data_buffer.cli_sockfd = rcv_sock;
@@ -809,9 +801,6 @@ static void * data_rcvhandle(void *arg){
 	while(1);
 }
 
-
-
-
 static void * data_sndhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
 
@@ -820,10 +809,10 @@ static void * data_sndhandle(void *arg){
 	int done=0;
 	while(1){
 		pthread_mutex_lock(&data_lock);
-
 		if(data_exist_buf==1){
 			MSG_T snd_msg;
 			memcpy(&snd_msg,&(data_buffer.recv_buf),sizeof(MSG_T));
+			
 			if(real_srv_sockfd==cli_sockfd){
 				send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 				data_exist_buf=0;
@@ -868,7 +857,7 @@ static void * data_sndhandle(void *arg){
 					break;
 				}
 			}
-			send(neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
+			send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
 			data_exist_buf=0;
 			memset(&data_buffer,0,sizeof(DATA_BUF));
 			fflush(NULL);
