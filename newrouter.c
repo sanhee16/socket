@@ -549,10 +549,10 @@ static void * sndhandle(void *arg){
 					}
 				}
 			}
-			fflush(NULL);
-			pthread_mutex_unlock(&lock);
-
 		}
+		fflush(NULL);
+		pthread_mutex_unlock(&lock);
+
 	}
 	while(1);
 }
