@@ -319,6 +319,7 @@ static void * cli_handle(void *arg){
 			}
 		}
 	}
+	while(1);
 }
 
 
