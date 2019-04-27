@@ -871,7 +871,7 @@ static void * data_sndhandle(void *arg){
 					break;
 
 			}
-			if(snd_msg.recv_port==4712 && compare==my_num){
+			if(compare==my_num){
 				if(real_cli_srv_sockfd==cli_sockfd){
 					pthread_mutex_lock(&data_lock);
 					//if this thread is connected to server, then send msg
@@ -882,7 +882,9 @@ static void * data_sndhandle(void *arg){
 					fflush(NULL);
 					pthread_mutex_unlock(&data_lock);
 					continue;
-
+				}
+				else{
+					continue;
 				}
 			}
 			/*

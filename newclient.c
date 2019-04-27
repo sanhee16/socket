@@ -10,6 +10,7 @@
 #include <pthread.h>
 #include <netdb.h>
 
+#define my_num 1
 //#include "fileopen.h"
 //#include "making_rt.h"
 //#include "data_handle_client.h"
