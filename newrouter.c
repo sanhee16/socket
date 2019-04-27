@@ -530,8 +530,8 @@ static void * sndhandle(void *arg){
 							make_table=1;
 							//pthread_create(&making_rr,NULL,RT_handler,NULL);
 
-							pthread_mutex_unlock(&lock);
-							break;
+							//pthread_mutex_unlock(&lock);
+							
 						}
 					}
 
@@ -852,7 +852,6 @@ static void * data_sndhandle(void *arg){
 					pthread_mutex_lock(&data_lock);
 					//if this thread is connected to server, then send msg
 					send(cli_sockfd,(char*)&snd_msg, 400, 0);
-					perror("send");
 					printf("send to server !\n");
 					data_exist_buf=0;
 					memset(&data_buffer,0,sizeof(DATA_BUF));
@@ -869,8 +868,7 @@ static void * data_sndhandle(void *arg){
 							pthread_mutex_lock(&data_lock);
 							//if this thread is connected to client, then send msg
 							send(cli_sockfd,(char*)&snd_msg, 400, 0);
-							perror("send");
-							printf("send to server !\n");
+							printf("send to client !\n");
 							data_exist_buf=0;
 							memset(&data_buffer,0,sizeof(DATA_BUF));
 							fflush(NULL);
@@ -922,13 +920,14 @@ static void * data_sndhandle(void *arg){
 			if(data_neighbor_sock[snd_sockfd]==cli_sockfd){
 				send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
 				perror("send");
+				printf("send to router! \n");
 				data_exist_buf=0;
 				memset(&data_buffer,0,sizeof(DATA_BUF));
 				fflush(NULL);
 			}
-		}
 		fflush(NULL);
-		pthread_mutex_unlock(&data_lock);
+		pthread_mutex_unlock(&data_lock);	
+		}
 
 	}
 	//`printf("\n\n---------done-----------\n\n");
