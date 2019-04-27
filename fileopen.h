@@ -6,12 +6,14 @@ int my_neighbor[ROU_NUM] = {-1, };
 int CT[ROU_NUM][ROU_NUM] = {-1, };
 
 void makeCT(){
+
 	char* path = "input.txt";
 	FILE* fp = NULL;
 	int val = 0;
 	char* ptr=NULL;
 	char* tok[5];
 	for(int a=0;a<ROU_NUM;a++){
+		my_neighbor[a]=-2;
 		for(int b=0;b<ROU_NUM;b++)
 			CT[a][b]=INFINITE;
 	}
