@@ -18,7 +18,7 @@ static void * RT_handler(void *arg){
 	print_CT();
 	//int done = *(int *)arg;
 	while(1){
-		print_CT();
+		//print_CT();
 		int d[ROU_NUM];
 		int set_s[ROU_NUM];
 		int set_c[ROU_NUM];
@@ -88,8 +88,8 @@ static void * RT_handler(void *arg){
 		for(int a=0;a<ROU_NUM;a++){
 			//if(a==my_num)
 			//	continue;
-			printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
-			printf("\n");
+			//printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
+			//printf("\n");
 		}
 
 		if(make_table==1){

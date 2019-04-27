@@ -69,7 +69,7 @@ static void * real_server_handle(void * arg){
 		cli_list[a]=0;
 	}
 	cli_list[1]=1; //connected client 212
-	cli_list[2]=2; //connected client 213
+	cli_list[2]=1; //connected client 213
 
 	data_router_num=0;
 	port_num = 4712;
