@@ -443,6 +443,7 @@ static void * sndhandle(void *arg){
 	SND_CT first;
 	print_CT();
 
+	int loop_onetime=0;
 	arr_copy(first.CT,CT);
 	for(int a=0;a<ROU_NUM;a++){
 		first.visit[a]=0;
@@ -510,6 +511,7 @@ static void * sndhandle(void *arg){
 						snd_ct.finish=1;
 					}
 					snd_ct.check_finish[my_num]=1;
+					if(loop_onetime==0){
 					if(buffer.recv_buf.finish==1){
 						for(int x=0;x<ROU_NUM;x++){
 							if(snd_ct.check_finish[x]==1){
@@ -524,14 +526,14 @@ static void * sndhandle(void *arg){
 							done=1;
 						}
 					}
+					}
 
 					if(done==1){
+						loop_onetime=1;
 						if(make_table==0){
 							make_table=1;
 							//pthread_create(&making_rr,NULL,RT_handler,NULL);
-
 							//pthread_mutex_unlock(&lock);
-							
 						}
 					}
 
