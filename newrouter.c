@@ -494,8 +494,8 @@ static void * sndhandle(void *arg){
 				}
 			}
 			//print_CT();
-			for(int a=0;a<ROU_NUM;a++){
-				if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
+			//for(int a=0;a<ROU_NUM;a++){
+				//if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
 					//fin_costtable[a]=1;
 
 					arr_copy(snd_ct.CT,CT);
@@ -512,20 +512,20 @@ static void * sndhandle(void *arg){
 					}
 					snd_ct.check_finish[my_num]=1;
 					if(loop_onetime==0){
-					if(buffer.recv_buf.finish==1){
-						for(int x=0;x<ROU_NUM;x++){
-							if(snd_ct.check_finish[x]==1){
+						if(buffer.recv_buf.finish==1){
+							for(int x=0;x<ROU_NUM;x++){
+								if(snd_ct.check_finish[x]==1){
 
+								}
+								else if(snd_ct.check_finish[x]!=1){
+									snd_ct.check_fin=0;
+									done=0;
+									break;
+								}
+								snd_ct.check_fin=1;
+								done=1;
 							}
-							else if(snd_ct.check_finish[x]!=1){
-								snd_ct.check_fin=0;
-								done=0;
-								break;
-							}
-							snd_ct.check_fin=1;
-							done=1;
 						}
-					}
 					}
 
 					if(done==1){
@@ -536,7 +536,8 @@ static void * sndhandle(void *arg){
 							//pthread_mutex_unlock(&lock);
 						}
 					}
-
+					for(int a=0;a<ROU_NUM;a++){
+					if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){ // my neighbor and thread's connected node
 					int len = sizeof(snd_ct);
 					send(neighbor_sock[a],(char*)&snd_ct, sizeof(SND_CT), 0);
 
@@ -929,8 +930,8 @@ static void * data_sndhandle(void *arg){
 				memset(&data_buffer,0,sizeof(DATA_BUF));
 				fflush(NULL);
 			}
-		fflush(NULL);
-		pthread_mutex_unlock(&data_lock);	
+			fflush(NULL);
+			pthread_mutex_unlock(&data_lock);	
 		}
 
 	}
