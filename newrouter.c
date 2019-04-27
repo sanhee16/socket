@@ -204,6 +204,8 @@ static void * srv_handle(void * arg){
 	for(int a=0; a<count_srv; a++){
 	//while(1){
 		ret1= listen(srv_sock, 0);
+		perror("listen");
+
 		if (ret1 == -1) {
 			perror("LISTEN stanby mode fail");
 			close(srv_sock);
@@ -471,6 +473,7 @@ static void * sndhandle(void *arg){
 	send(cli_sockfd, (char*)&first, sizeof(SND_CT), 0);
 	//perror("send");
 	while(1){
+		print_CT();
 		pthread_mutex_lock(&lock);
 		if(exist_buf==1){
 			SND_CT snd_ct;
