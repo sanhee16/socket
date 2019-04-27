@@ -9,19 +9,37 @@ int cli_list[ROU_NUM];
 pthread_mutex_t srv_lock;
 pthread_cond_t srv_cond;
 
+typedef struct msg_data{
+	char snd_ip[15];
+	char recv_ip[15];
+	int snd_port;
+	int recv_port;
+	char msg[362];
+	// this structure size is 400
+}MSG_T;
+
+typedef struct buf{
+	MSG_T recv_buf;
+	int cli_sockfd;
+}DATA_BUF;
+
+DATA_BUF srv_data_buffer;
+int srv_data_exist_buf=0;
+
 
 static void * real_server_handle(void * arg){
 	int srv_sock, cli_sock;
 	int port_num, ret;
 	struct sockaddr_in addr;
 	int len;
+	int data_router_num;
 
 	for(int a=0;a<ROU_NUM;a++){
 		cli_list[a]=0;
 	}
 	cli_list[1]=1; //connected client 212
 	cli_list[2]=2; //connected client 213
-	
+
 	data_router_num=0;
 	port_num = 4712;
 
@@ -55,7 +73,6 @@ static void * real_server_handle(void * arg){
 		return 0;
 	}
 	int cli_acc = accept(srv_sock, (struct sockaddr *)NULL, NULL);
-	int ret = -1;
 	char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 	/* get peer addr */
 	struct sockaddr peer_addr;
@@ -63,7 +80,7 @@ static void * real_server_handle(void * arg){
 	socklen_t peer_addr_len;
 	memset(&peer_addr, 0, sizeof(peer_addr));
 	peer_addr_len = sizeof(peer_addr);
-	ret = getpeername(cli_sockarr[a], &peer_addr, &peer_addr_len);
+	ret = getpeername(cli_acc, &peer_addr, &peer_addr_len);
 	ret = getnameinfo(&peer_addr, peer_addr_len,
 			hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
 			NI_NUMERICHOST | NI_NUMERICSERV);
@@ -93,23 +110,15 @@ static void * real_srv_rcvhandle(void *arg){
 		memset(&(get_msg),0,sizeof(get_msg));
 
 		int len;
-		int rcv_sock;
-
-
-		for(int x=0;x<ROU_NUM;x++){
-			if(neighbor_sock[x]==cli_sockfd){
-				rcv_sock=x;
-				break;
-			}
-		}
+		//int rcv_sock;
 
 		len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 		if(len<0)
 			continue;
 		pthread_mutex_lock(&srv_lock);
 
-		memcpy(&(data_buffer.recv_buf),&get_msg,sizeof(MSG_T));
-		data_buffer.cli_sockfd = rcv_sock;
+		memcpy(&(srv_data_buffer.recv_buf),&get_msg,sizeof(MSG_T));
+		srv_data_buffer.cli_sockfd = cli_sockfd;
 
 		srv_data_exist_buf=1;
 		fflush(NULL);
@@ -131,35 +140,36 @@ static void * real_srv_sndhandle(void *arg){
 
 		if(srv_data_exist_buf==1){
 			MSG_T snd_msg;
-			memcpy(&snd_msg,&(data_buffer.recv_buf),sizeof(MSG_T));
-			if(data_buffer.recv_buf.check_fin==1){
-				//print_CT();
-				pthread_mutex_unlock(&data_lock);
-				continue;
-			}
+			memcpy(&snd_msg,&(srv_data_buffer.recv_buf),sizeof(MSG_T));
 
 			//int snd_sockfd = data_buffer.cli_sockfd;
 			//snd all client
-			snd_msg.snd_ip="220.149.244.211";
+			strcpy(snd_msg.snd_ip,"220.149.244.211");
+			//snd_msg.snd_ip="220.149.244.211";
 			snd_msg.snd_port=4712;
 			snd_msg.recv_port=4712;
-			int set[ROU_NUM];
-			if(int a=0;a<ROU_NUM;a++){
+			char* set[ROU_NUM];
+			for(int a=0;a<ROU_NUM;a++){
 				switch(a){
 					case 0:
-						set[a]="220.149.244.211";
+						strcpy(set[a],"220.149.244.211");
+						//set[a]="220.149.244.211";
 						break;
 					case 1:
-						set[a]="220.149.244.212";
+						strcpy(set[a],"220.149.244.212");
+						//set[a]="220.149.244.212";
 						break;
 					case 2:
-						set[a]="220.149.244.213";
+						strcpy(set[a],"220.149.244.213");
+						//set[a]="220.149.244.213";
 						break;
 					case 3:
-						set[a]="220.149.244.214";
+						strcpy(set[a],"220.149.244.214");
+						//set[a]="220.149.244.214";
 						break;
 					case 4:
-						set[a]="220.149.244.215";
+						strcpy(set[a],"220.149.244.215");
+						//set[a]="220.149.244.215";
 						break;
 					default:
 						break;
@@ -167,42 +177,41 @@ static void * real_srv_sndhandle(void *arg){
 			}
 			for(int a=0;a<ROU_NUM;a++){
 				if(cli_list[a]==1){
-					snd_msg.recv_ip = set[a];
+					strcpy(snd_msg.recv_ip,set[a]);
+					//snd_msg.recv_ip = set[a];
 					send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 				}
 			}
-			data_exist_buf=0;
-			memset(&data_buffer,0,sizeof(BUF));
+			srv_data_exist_buf=0;
+			memset(&srv_data_buffer,0,sizeof(DATA_BUF));
 			fflush(NULL);
 			//check routing table (rt) -> set snd_sockfd
 
-			int dest_num=-1;
-			if(*(snd_msg.recv_ip + 14)=='1'){
-				dest_num=0;
-			}
-			else if(*(snd_msg.recv_ip + 14)=='2'){
-				dest_num=1;
-			}
-			else if(*(snd_msg.recv_ip + 14)=='3'){
-				dest_num=2;
-			}
-			else if(*(snd_msg.recv_ip + 14)=='4'){
-				dest_num=3;
-			}
-			else if(*(snd_msg.recv_ip + 14)=='5'){
-				dest_num=4;
-			}
+			/*
+			   int dest_num=-1;
+			   if(*(snd_msg.recv_ip + 14)=='1'){
+			   dest_num=0;
+			   }
+			   else if(*(snd_msg.recv_ip + 14)=='2'){
+			   dest_num=1;
+			   }
+			   else if(*(snd_msg.recv_ip + 14)=='3'){
+			   dest_num=2;
+			   }
+			   else if(*(snd_msg.recv_ip + 14)=='4'){
+			   dest_num=3;
+			   }
+			   else if(*(snd_msg.recv_ip + 14)=='5'){
+			   dest_num=4;
+			   }
 
-			for(int a=0;a<ROU_NUM;a++){
-				if(rt.dest[a]==dest_num){
-					snd_sockfd=rt.next[a];
-					break;
-				}
-			}
-			send(neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
-			data_exist_buf=0;
-			memset(&data_buffer,0,sizeof(BUF));
-			fflush(NULL);
+			   for(int a=0;a<ROU_NUM;a++){
+			   if(rt.dest[a]==dest_num){
+			   snd_sockfd=rt.next[a];
+			   break;
+			   }
+			   }
+			 */
 		}
 		fflush(NULL);
 		pthread_mutex_unlock(&srv_lock);
