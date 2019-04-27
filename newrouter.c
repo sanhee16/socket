@@ -468,8 +468,8 @@ static void * sndhandle(void *arg){
 			memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
 			if(done==1){
 				make_table=1;
-				pthread_mutex_unlock(&lock);
-				continue;
+				//pthread_mutex_unlock(&lock);
+				//continue;
 			}
 			int snd_sockfd = buffer.cli_sockfd;
 			for(int a=0;a<ROU_NUM;a++){
@@ -726,6 +726,7 @@ static void * data_cli_handle(void *arg){
 
 					printf("connect sock %d \n\n",data_neighbor_sock[a]);
 					if(make_fd==-1){
+						con_done[a]=0;
 						continue;
 					}
 					con_done[a]=1;
