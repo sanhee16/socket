@@ -898,14 +898,15 @@ static void * srv_handle(void * arg)
 			int len;
 			int rcv_sock;
 			/*
-			   for(int x=0;x<ROU_NUM;x++){
+			for(int x=0;x<ROU_NUM;x++){
 			   printf("data: neighbor? %d \n",data_neighbor_sock[x]);
+			   
 			   if(data_neighbor_sock[x]==cli_sockfd){
-			   rcv_sock=x;
-			   break;
+					rcv_sock=x;
+				   break;
 			   }
-			   }
-			 */
+			}
+			*/
 			len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 			
 			if(len<0)
@@ -918,9 +919,9 @@ static void * srv_handle(void * arg)
 			printf("data rcv : %s ",get_msg.snd_ip);
 			printf("data rcv : %s ",get_msg.recv_ip);
 			
-			strcpy(data_buffer.data_recv_buf.msg, get_msg.msg);
-			strcpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip);
-			strcpy(data_buffer.data_recv_buf.recv_ip, get_msg.recv_ip);
+			strncpy(data_buffer.data_recv_buf.msg, get_msg.msg,362);
+			strncpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip,15);
+			strncpy(data_buffer.data_recv_buf.recv_ip, get_msg.recv_ip,15);
 			data_buffer.data_recv_buf.snd_port = get_msg.snd_port;
 			data_buffer.data_recv_buf.recv_port = get_msg.recv_port;
 
