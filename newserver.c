@@ -195,7 +195,7 @@ static void * real_srv_sndhandle(void *arg){
 
 			MSG_T snd_msg;
 			memset(&snd_msg,0,400);
-			memcpy(&snd_msg.msg, &(srv_data_buffer.recv_buf.msg),362);
+			memcpy(&snd_msg, &(srv_data_buffer.recv_buf),400);
 			printf("snd ip %s ",snd_msg.snd_ip);
 
 			strcpy(snd_msg.snd_ip,"220.149.244.211");
