@@ -30,6 +30,7 @@ pthread_t data_srv_thread;
 int router_num;
 int exist_buf=0;
 int buf_count=0;
+int thds=0;
 
 int neighbor_sock[ROU_NUM] = {-1, };
 int neighbor_sock_srv[ROU_NUM] = {-1, };
@@ -67,6 +68,7 @@ int real_cli_srv_sockfd=-1;
 
 
 static void * data_cli_handle(void * arg);
+static void * srv_listen_handler(void * arg);
 static void * data_srv_handle(void * arg);
 static void *data_sndhandle(void * arg);
 static void *data_rcvhandle(void * arg);
@@ -142,7 +144,6 @@ int main(int argc, char *argv[])
 {
 	//client_ip[0]="220.149.244.211";
 	//client_ip[1]="220.149.244.212";
-
 	makeCT();
 	//print_CT();
 	pthread_create(&server, NULL, srv_handle, NULL);
@@ -208,10 +209,11 @@ static void * srv_handle(void * arg)
 		}
 	}
 	printf("count %d ", count_srv);
-	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
-
+	//int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
+	int cli_sockarr;
 	//int a=0;
-	for(int a=0; a<count_srv; a++)
+
+	for(;;)
 	{
 		//while(1){
 		ret1= listen(srv_sock, 0);
@@ -224,9 +226,66 @@ static void * srv_handle(void * arg)
 			return 0;
 		}
 
-		cli_sockarr[a] = accept(srv_sock, (struct sockaddr *)NULL, NULL);
+		cli_sockarr = accept(srv_sock, (struct sockaddr *)NULL, NULL);
+		if (cli_sockarr== -1){
+			close(srv_sock);
+		}
 
-		printf("listen %d",a);
+		pthread_create(&tids[thds], NULL, srv_listen_handler, &cli_sockarr);
+		thds++;
+		/*
+		   int ret = -1;
+		   char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+		// get peer addr 
+		struct sockaddr peer_addr;
+		socklen_t peer_addr_len;
+		memset(&peer_addr, 0, sizeof(peer_addr));
+		peer_addr_len = sizeof(peer_addr);
+		ret = getpeername(cli_sockarr[a], &peer_addr, &peer_addr_len);
+		ret = getnameinfo(&peer_addr, peer_addr_len,
+		hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
+		NI_NUMERICHOST | NI_NUMERICSERV);
+
+
+		if(ret != 0)
+		{
+		ret = -1;
+		pthread_exit(&ret);
+		}
+
+		if(*(hbuf+14)=='1'){
+		neighbor_sock_srv[0]=cli_sockarr[a];
+		}
+		else if(*(hbuf+14)=='2'){
+		neighbor_sock_srv[1]=cli_sockarr[a];
+		}
+		else if(*(hbuf+14)=='3'){
+		neighbor_sock_srv[2]=cli_sockarr[a];
+		}
+		else if(*(hbuf+14)=='4'){
+		neighbor_sock_srv[3]=cli_sockarr[a];
+		}
+		else if(*(hbuf+14)=='5'){
+		neighbor_sock_srv[4]=cli_sockarr[a];
+		}
+		 */
+	}	
+	//pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
+	//router_num++;
+	//a++;
+	/*
+	   for(int a=0;a<count_srv;a++){
+	   printf("make thread \n");
+	   pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
+	   router_num++;
+	   }
+	 */
+	}
+
+	static void * srv_listen_handler(void * arg){
+
+		int cli_sock = *(int *)arg;
+
 		int ret = -1;
 		char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 		/* get peer addr */
@@ -234,7 +293,7 @@ static void * srv_handle(void * arg)
 		socklen_t peer_addr_len;
 		memset(&peer_addr, 0, sizeof(peer_addr));
 		peer_addr_len = sizeof(peer_addr);
-		ret = getpeername(cli_sockarr[a], &peer_addr, &peer_addr_len);
+		ret = getpeername(cli_sock, &peer_addr, &peer_addr_len);
 		ret = getnameinfo(&peer_addr, peer_addr_len,
 				hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
 				NI_NUMERICHOST | NI_NUMERICSERV);
@@ -246,41 +305,28 @@ static void * srv_handle(void * arg)
 			pthread_exit(&ret);
 		}
 
-
-
-		if (cli_sockarr[a] == -1) 
-		{
-			//perror("cli_sock connect ACCEPT fail");
-			close(srv_sock);
-
-		}
-
-
 		if(*(hbuf+14)=='1'){
-			neighbor_sock_srv[0]=cli_sockarr[a];
+			neighbor_sock_srv[0]=cli_sock;
 		}
 		else if(*(hbuf+14)=='2'){
-			neighbor_sock_srv[1]=cli_sockarr[a];
+			neighbor_sock_srv[1]=cli_sock;
 		}
 		else if(*(hbuf+14)=='3'){
-			neighbor_sock_srv[2]=cli_sockarr[a];
+			neighbor_sock_srv[2]=cli_sock;
 		}
 		else if(*(hbuf+14)=='4'){
-			neighbor_sock_srv[3]=cli_sockarr[a];
+			neighbor_sock_srv[3]=cli_sock;
 		}
 		else if(*(hbuf+14)=='5'){
-			neighbor_sock_srv[4]=cli_sockarr[a];
+			neighbor_sock_srv[4]=cli_sock;
 		}
-	}	
-	//pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
-	//router_num++;
-	//a++;
 
-	for(int a=0;a<count_srv;a++){
-		printf("make thread \n");
-		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
+
+		printf("route : ip %s \n clisock %d \n",hbuf,cli_sock);
+		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sock);
 		router_num++;
-	}
+
+
 	}
 
 
