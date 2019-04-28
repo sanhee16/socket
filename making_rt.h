@@ -1,3 +1,5 @@
+pthread_mutex_t lock;
+
 int edge[ROU_NUM];
 int fin_table[ROU_NUM];
 int make_table=0;
@@ -19,6 +21,7 @@ static void * RT_handler(void *arg){
 	//int done = *(int *)arg;
 	while(1){
 		//print_CT();
+		pthread_mutex_lock(&lock);
 		int d[ROU_NUM];
 		int set_s[ROU_NUM];
 		int set_c[ROU_NUM];
@@ -100,9 +103,11 @@ static void * RT_handler(void *arg){
 				printf("%d -> %d : %d",source, a, d[a]);
 				printf(" next %d \n",edge[a]);
 			}
-			//break;
+			
+			pthread_mutex_unlock(&lock);
+			break;
 		}
-
+	pthread_mutex_unlock(&lock);
 	}
 	return 0;
 }
