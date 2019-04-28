@@ -25,11 +25,11 @@ char* server_ip="220.149.244.211";
 pthread_mutex_t cli_data_lock;
 
 typedef struct msg_data{
-	char snd_ip[15];
-	char recv_ip[15];
+	char snd_ip[16];
+	char recv_ip[16];
 	int snd_port;
 	int recv_port;
-	char msg[362];
+	char msg[360];
 	// this structure size is 400
 }MSG_T;
 
@@ -67,8 +67,8 @@ static void * real_client_handle(void * arg){
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htons (INADDR_ANY);
 	addr.sin_port = htons (port_num);
- int nSockOpt=1;
-     setsockopt(srv_sock,SOL_SOCKET,SO_REUSEADDR,&nSockOpt,sizeof(nSockOpt));
+	int nSockOpt=1;
+	setsockopt(srv_sock,SOL_SOCKET,SO_REUSEADDR,&nSockOpt,sizeof(nSockOpt));
 
 
 	ret = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
@@ -178,16 +178,18 @@ static void * real_cli_sndhandle(void *arg){
 		printf("in");
 		MSG_T snd_msg;
 		memset(&snd_msg,0,sizeof(MSG_T));
+		
 		//char* read_buffer = (char *)malloc(362);
 		//ret = read(1, read_buffer, 362);
 		fflush(NULL);
-		ret = read(1, snd_msg.msg, 362);
+		ret = read(1, snd_msg.msg, 360);
 		fflush(NULL);
 		if(ret == -1) {
-			perror("getline");
+			perror("read");
 			pthread_mutex_unlock(&cli_data_lock);
 			break;
 		}
+		
 		int len = strlen(snd_msg.msg);
 		//int len = strlen(read_buffer);
 		if (len == 0) {
@@ -196,23 +198,31 @@ static void * real_cli_sndhandle(void *arg){
 			continue;
 		}
 		printf("send %s (<-cliemt)",snd_msg.msg);
+
+		printf("senmd ip is %s \n",snd_msg.snd_ip);
+		strncpy(snd_msg.recv_ip, server_ip, 15);
+	
+		printf("senmd ip is %s \n",snd_msg.snd_ip);
+		printf("send recv %s \n",snd_msg.recv_ip);
+
 		if(my_num==1){
-			strcpy(snd_msg.snd_ip,"220.149.244.212");
+			strncpy(snd_msg.snd_ip,"220.149.244.212",16);
 		}
 		else if(my_num==2){
-			strcpy(snd_msg.snd_ip,"220.149.244.213");
+			strncpy(snd_msg.snd_ip,"220.149.244.213",16);
 		}
-		printf("senmd ip is %s \n",snd_msg.snd_ip);
-		strcpy(snd_msg.recv_ip,"220.149.244.211");
-		printf("send recv %s \n",snd_msg.recv_ip);
+
 		//snd_msg.snd_ip="220.149.244.212";
 		//snd_msg.recv_ip="220.149.244.211";
 		snd_msg.snd_port=4712;
 		snd_msg.recv_port=4712;
 
-		send(cli_sockfd, snd_msg, sizeof(MSG_T), 0);
+		//send(cli_sockfd, &snd_msg, sizeof(MSG_T), 0);
 
-		//send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+		send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+		printf("senmd ip is %s \n",snd_msg.snd_ip);
+		printf("send recv %s \n",snd_msg.recv_ip);
+
 		fflush(NULL);
 		pthread_mutex_unlock(&cli_data_lock);
 

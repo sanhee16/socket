@@ -26,11 +26,11 @@ pthread_mutex_t srv_lock;
 pthread_cond_t srv_cond;
 
 typedef struct msg_data{
-	char snd_ip[15];
-	char recv_ip[15];
+	char snd_ip[16];
+	char recv_ip[16];
 	int snd_port;
 	int recv_port;
-	char msg[362];
+	char msg[360];
 	// this structure size is 400
 }MSG_T;
 
@@ -168,7 +168,7 @@ static void * real_srv_sndhandle(void *arg){
 	size_t getline_len;
 	int ret;
 	int done=0;
-	char set[ROU_NUM][15];
+	char set[ROU_NUM][16];
 
 	for(int a=0;a<ROU_NUM;a++){
 		switch(a){

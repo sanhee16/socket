@@ -100,11 +100,11 @@ pthread_t data_server;
 pthread_mutex_t data_lock;
 
 typedef struct msg_data{
-	char snd_ip[15];
-	char recv_ip[15];
+	char snd_ip[16];
+	char recv_ip[16];
 	int snd_port;
 	int recv_port;
-	char msg[362];
+	char msg[360];
 	// this structure size is 400
 }MSG_T;
 
@@ -649,7 +649,7 @@ static void * srv_handle(void * arg)
 		int len;
 		struct sockaddr_in addr;
 
-		char send_ip[15];
+		char send_ip[16];
 
 		fd_sock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -891,8 +891,8 @@ static void * srv_handle(void * arg)
 		int done=0;
 		while(1){
 			fflush(NULL);
-			//MSG_T get_msg;
-			//memset(&get_msg,0,sizeof(MSG_T));
+			MSG_T get_msg;
+			memset(&get_msg,0,sizeof(MSG_T));
 
 			//printf("get init %s \n",get_msg->msg);
 			int len;
@@ -907,9 +907,9 @@ static void * srv_handle(void * arg)
 			   }
 			}
 			*/
-			MSG_T* get_msg;
+			//MSG_T* get_msg;
 			//char getBuf[400];
-			len = recv(cli_sockfd, get_msg, sizeof(MSG_T), 0);
+			len = recv(cli_sockfd, (char *)&get_msg, sizeof(MSG_T), 0);
 			if(len<0)
 				 continue;
 			
@@ -920,21 +920,22 @@ static void * srv_handle(void * arg)
 			//MSG_T* get_msg;
 			//get_msg = (MSG_T*)getBuf;
 					
-			printf("\ndata rcv(data) : %s ",get_msg->msg);
-			printf("data rcv(snd ip) : %s \n",get_msg->snd_ip);
-			printf("data rcv(recv ip) : %s \n",get_msg->recv_ip);
+			printf("\ndata rcv(data) : %s ",get_msg.msg);
+			printf("data rcv(snd ip) : %s \n",get_msg.snd_ip);
+			printf("data rcv(recv ip) : %s \n",get_msg.recv_ip);
 			
-			//strncpy(data_buffer.data_recv_buf.msg, get_msg.msg,362);
-			//strncpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip,7);
-			//strncpy(data_buffer.data_recv_buf.recv_ip, get_msg.recv_ip,7);
-			data_buffer.data_recv_buf.snd_port = get_msg->snd_port;
-			data_buffer.data_recv_buf.recv_port = get_msg->recv_port;
+			strncpy(data_buffer.data_recv_buf.msg, get_msg.msg,360);
+			strncpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip,16);
+			strncpy(data_buffer.data_recv_buf.recv_ip, get_msg.recv_ip,16);
+
+			data_buffer.data_recv_buf.snd_port = get_msg.snd_port;
+			data_buffer.data_recv_buf.recv_port = get_msg.recv_port;
 
 			//memcpy(&(data_buffer.data_recv_buf),&get_msg,sizeof(MSG_T));
 			data_buffer.cli_sockfd = cli_sockfd;
 
-			printf("recv ip is %s \n",get_msg->snd_ip);
-			printf("recv ip is %s \n",data_buffer.data_recv_buf.snd_ip);
+			printf("recv ip(snd) is %s \n",get_msg.snd_ip);
+			printf("recv ip(snd/cpy) is %s \n",data_buffer.data_recv_buf.snd_ip);
 
 			data_exist_buf = 1;
 			fflush(NULL);
