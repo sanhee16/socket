@@ -14,9 +14,14 @@
 #include "fileopen.h"
 //#include "making_rt.h"
 #define CLI_NUM 2
-//
+#define MAX_BUF 100
+
 
 pthread_mutex_t lock;
+
+
+
+
 
 int edge[ROU_NUM];
 int fin_table[ROU_NUM];
@@ -75,6 +80,9 @@ typedef struct buf{
 	int cli_sockfd;
 }BUF;
 
+
+
+
 ///////////////////////////////////////////////DATA/////////////
 pthread_t data_rcv_thread[100];
 pthread_t data_snd_thread[100];
@@ -112,6 +120,10 @@ typedef struct buf_data{
 	MSG_T data_recv_buf;
 	int cli_sockfd;
 }DATA_BUF;
+
+
+MSG_T buffer_arr[MAX_BUF];
+int data_exist_buf_arr[MAX_BUF] ={0, };
 
 DATA_BUF data_buffer;
 int data_exist_buf=0;
@@ -937,7 +949,18 @@ static void * srv_handle(void * arg)
 			printf("recv ip(snd) is %s \n",get_msg.snd_ip);
 			printf("recv ip(snd/cpy) is %s \n",data_buffer.data_recv_buf.snd_ip);
 
-			data_exist_buf = 1;
+			for(int ch=0;ch<MAX_BUF;ch++){
+				if(data_exist_buf_arr[ch]==0){
+					data_exist_buf_arr[ch]=1;
+					memcpy(&buffer_arr[ch],&data_buffer.data_recv_buf,sizeof(MSG_T));
+					memset(&data_buffer,0,sizeof(DATA_BUF));
+					break;
+				}
+				if(ch==MAX_BUF-1){
+					break;
+				}
+			}
+			//data_exist_buf = 1;
 			fflush(NULL);
 
 			pthread_mutex_unlock(&data_lock);
@@ -976,10 +999,14 @@ static void * srv_handle(void * arg)
 		while(1){
 			fflush(NULL);
 			//pthread_mutex_lock(&data_lock);
-			if(data_exist_buf==1){
+			for(int ch=0;ch<MAX_BUF;ch++){
+				
+			if(data_exist_buf_arr[ch]==1){
+			//if(data_exist_buf==1){
 				MSG_T snd_msg;
 				memset(&snd_msg,0,sizeof(MSG_T));
-				memcpy(&snd_msg,&(data_buffer.data_recv_buf),sizeof(MSG_T));
+				memcpy(&snd_msg,&buffer_arr[ch],sizeof(MSG_T));
+				//memcpy(&snd_msg,&(data_buffer.data_recv_buf),sizeof(MSG_T));
 				
 				int compare=-1;
 				if(*(snd_msg.recv_ip+14)=='1'){
@@ -1006,8 +1033,10 @@ static void * srv_handle(void * arg)
 						//if this thread is connected to server, then send msg
 						send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 						printf("send to server !\n");
-						data_exist_buf=0;
-						memset(&data_buffer,0,sizeof(DATA_BUF));
+						data_exist_buf_arr[ch]=0;
+						memset(&buffer_arr[ch],0,sizeof(DATA_BUF));
+						//data_exist_buf=0;
+						//memset(&data_buffer,0,sizeof(DATA_BUF));
 						fflush(NULL);
 						pthread_mutex_unlock(&data_lock);
 						continue;
@@ -1069,8 +1098,10 @@ static void * srv_handle(void * arg)
 					
 					printf("send ip is %s \n",snd_msg.snd_ip);
 					printf("send to router! \n");
-					data_exist_buf=0;
-					memset(&data_buffer,0,sizeof(DATA_BUF));
+					data_exist_buf_arr[ch]=0;
+					memset(&buffer_arr[ch],0,sizeof(DATA_BUF));
+					//data_exist_buf=0;
+					//memset(&data_buffer,0,sizeof(DATA_BUF));
 					fflush(NULL);
 					fflush(stdin);
 				}
@@ -1080,6 +1111,7 @@ static void * srv_handle(void * arg)
 				pthread_mutex_unlock(&data_lock);	
 			}
 
+			}
 		}
 		//`printf("\n\n---------done-----------\n\n");
 		//print_CT();
