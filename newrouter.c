@@ -474,12 +474,13 @@ static void * srv_handle(void * arg){
 		while(1){
 			//print_CT();
 			//pthread_mutex_lock(&lock);
+			/*
 			if(done==1){
 				make_table=1;
 				printf("done \n");
 				print_CT();
 			}
-
+			*/
 			if(exist_buf==1){
 				pthread_mutex_lock(&lock);
 
@@ -541,6 +542,8 @@ static void * srv_handle(void * arg){
 					loop_onetime=1;
 					if(make_table==0){
 						make_table=1;
+						printf("done \n");
+						print_CT();
 					}
 				}
 				for(int a=0;a<ROU_NUM;a++){
@@ -555,10 +558,10 @@ static void * srv_handle(void * arg){
 						}
 					}
 				}
-			}
-			fflush(NULL);
-			pthread_mutex_unlock(&lock);
-		}
+				fflush(NULL);
+				pthread_mutex_unlock(&lock);
+			}//if(exist_buf==1)
+		}//while
 		while(1);
 	}
 	void arr_copy(int(*arr)[ROU_NUM], int(*copy)[ROU_NUM]){
