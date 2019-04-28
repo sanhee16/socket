@@ -1114,14 +1114,9 @@ static void * data_sndhandle(void *arg){
 					}
 				}
 
-				//	printf("snd_sockfd is %d my neig? %d \n",snd_sockfd,my_neighbor[snd_sockfd]);
-				//	printf("neig %d | cli %d \n",data_neighbor_sock[snd_sockfd],cli_sockfd);
 				fflush(NULL);
 
 				if(my_neighbor[snd_sockfd]==1 && data_neighbor_sock[snd_sockfd]==cli_sockfd){
-					//pthread_mutex_lock(&data_lock);
-					//	printf("snd_sockfd is %d \n",snd_sockfd);
-					//	printf("neig %d | cli %d \n",data_neighbor_sock[snd_sockfd],cli_sockfd);
 					fflush(NULL);
 					send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
 					perror("send");
@@ -1130,10 +1125,14 @@ static void * data_sndhandle(void *arg){
 					printf("send to router! \n");
 					data_exist_buf_arr[ch]=0;
 					memset(&buffer_arr[ch],0,sizeof(DATA_BUF));
-					//data_exist_buf=0;
-					//memset(&data_buffer,0,sizeof(DATA_BUF));
+					pthread_mutex_unlock(&data_lock);
+					 ch++;
+					 if(ch==MAX_BUF){
+						ch=0;
+					 }
 					fflush(NULL);
 					fflush(stdin);
+					
 				}
 				fflush(NULL);
 				fflush(stdin);
@@ -1141,11 +1140,15 @@ static void * data_sndhandle(void *arg){
 				//pthread_mutex_unlock(&data_lock);
 			}//not if
 			//no exist
-				ch++;
+				else{
+			pthread_mutex_unlock(&data_lock);
+
+			ch++;
 				if(ch==MAX_BUF){
 					ch=0;
 				}
-			pthread_mutex_unlock(&data_lock);
+				}
+			//pthread_mutex_unlock(&data_lock);
 
 		}
 
