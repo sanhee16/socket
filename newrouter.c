@@ -1066,6 +1066,8 @@ static void * srv_handle(void * arg)
 					fflush(NULL);
 					send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
 					perror("send");
+					
+					printf("send ip is %s \n",snd_msg.snd_ip);
 					printf("send to router! \n");
 					data_exist_buf=0;
 					memset(&data_buffer,0,sizeof(DATA_BUF));

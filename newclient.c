@@ -194,9 +194,10 @@ static void * real_cli_sndhandle(void *arg){
 		if(my_num==1){
 			strcpy(snd_msg.snd_ip,"220.149.244.212");
 		}
-		if(my_num==2){
+		else if(my_num==2){
 			strcpy(snd_msg.snd_ip,"220.149.244.213");
 		}
+		printf("senmd ip is %s \n",snd_msg.snd_ip);
 		strcpy(snd_msg.recv_ip,"220.149.244.211");
 		//snd_msg.snd_ip="220.149.244.212";
 		//snd_msg.recv_ip="220.149.244.211";
