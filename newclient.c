@@ -147,7 +147,7 @@ static void * real_cli_rcvhandle(void *arg){
 		   }
 		 */
 		printf("wait");
-		len = recv(cli_sockfd, &get_msg, 400, 0);
+		len = recv(cli_sockfd, &get_msg ,sizeof(MSG_T), 0);
 		perror("recv");
 		if(len<0){
 			//pthread_mutex_unlock(&cli_data_lock);
@@ -176,7 +176,7 @@ static void * real_cli_sndhandle(void *arg){
 		pthread_mutex_lock(&cli_data_lock);
 		printf("in");
 		MSG_T snd_msg;
-		memset(&snd_msg,0,400);
+		memset(&snd_msg,0,sizeof(MSG_T));
 		//char* read_buffer = (char *)malloc(362);
 		//ret = read(1, read_buffer, 362);
 		ret = read(1, snd_msg.msg, 362);

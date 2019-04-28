@@ -905,14 +905,14 @@ static void * srv_handle(void * arg)
 			   }
 			   }
 			 */
-			len = recv(cli_sockfd, &get_msg, 400, 0);
+			len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 			if(len<0)
 				continue;
 
 			pthread_mutex_lock(&data_lock);
 
 			printf("data rcv : %s ",get_msg.msg);
-			memcpy(&(data_buffer.data_recv_buf),&get_msg,400);
+			memcpy(&(data_buffer.data_recv_buf),&get_msg,sizeof(MSG_T));
 			data_buffer.cli_sockfd = cli_sockfd;
 
 			printf("recv ip is %s \n",get_msg.snd_ip);
@@ -959,8 +959,8 @@ static void * srv_handle(void * arg)
 			//pthread_mutex_lock(&data_lock);
 			if(data_exist_buf==1){
 				MSG_T snd_msg;
-				memset(&snd_msg,0,400);
-				memcpy(&snd_msg,&(data_buffer.data_recv_buf),400);
+				memset(&snd_msg,0,sizeof(MSG_T));
+				memcpy(&snd_msg,&(data_buffer.data_recv_buf),sizeof(MSG_T));
 				
 				int compare=-1;
 				if(*(snd_msg.recv_ip+14)=='1'){
@@ -979,13 +979,13 @@ static void * srv_handle(void * arg)
 					compare=4;
 				}
 
-				printf("recv ip is %s \n",snd_msg.snd_ip);
-				printf("compare %d my num %d \n\n",compare,my_num);
+				//printf("recv ip is %s \n",snd_msg.snd_ip);
+				//printf("compare %d my num %d \n\n",compare,my_num);
 				if(compare==my_num){
 					if(real_cli_srv_sockfd==cli_sockfd){
 						pthread_mutex_lock(&data_lock);
 						//if this thread is connected to server, then send msg
-						send(cli_sockfd,(char*)&snd_msg, 400, 0);
+						send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 						printf("send to server !\n");
 						data_exist_buf=0;
 						memset(&data_buffer,0,sizeof(DATA_BUF));
@@ -994,7 +994,6 @@ static void * srv_handle(void * arg)
 						continue;
 					}
 					else{
-						pthread_mutex_unlock(&data_lock);
 						continue;
 					}
 				}

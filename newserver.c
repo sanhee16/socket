@@ -144,13 +144,13 @@ static void * real_srv_rcvhandle(void *arg){
 		int len;
 		//int rcv_sock;
 
-		len = recv(cli_sockfd, &get_msg, 400, 0);
+		len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 		if(len<0)
 			continue;
 		printf("recv : %s ",get_msg.msg);
 		pthread_mutex_lock(&srv_lock);
 
-		memcpy(&(srv_data_buffer.recv_buf),&get_msg,400);
+		memcpy(&(srv_data_buffer.recv_buf),&get_msg,sizeof(MSG_T));
 		srv_data_buffer.cli_sockfd = cli_sockfd;
 
 		srv_data_exist_buf=1;
@@ -198,8 +198,8 @@ static void * real_srv_sndhandle(void *arg){
 			pthread_mutex_lock(&srv_lock);
 
 			MSG_T snd_msg;
-			memset(&snd_msg,0,400);
-			memcpy(&snd_msg, &(srv_data_buffer.recv_buf),400);
+			memset(&snd_msg,0,sizeof(MSG_T));
+			memcpy(&snd_msg, &(srv_data_buffer.recv_buf),sizeof(MSG_T));
 			printf("snd ip %s ",snd_msg.snd_ip);
 
 			strcpy(snd_msg.snd_ip,"220.149.244.211");
@@ -214,12 +214,12 @@ static void * real_srv_sndhandle(void *arg){
 					printf("my ip is %s \n",snd_msg.snd_ip);
 					printf("send ip is %s \n",snd_msg.recv_ip);
 					
-					send(cli_sockfd,(char*)&snd_msg, 400, 0);
+					send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 				}
 			}
-			memset(&snd_msg,0,400);
+			memset(&snd_msg,0,sizeof(MSG_T));
 			srv_data_exist_buf=0;
-			memset(&srv_data_buffer,0,404);
+			memset(&srv_data_buffer,0,sizeof(DATA_BUF));
 			fflush(NULL);
 		}
 		fflush(NULL);
