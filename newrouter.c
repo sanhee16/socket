@@ -892,7 +892,7 @@ static void * srv_handle(void * arg)
 		while(1){
 			fflush(NULL);
 			MSG_T get_msg;
-			memset(&(get_msg),0,sizeof(get_msg));
+			memset(&get_msg,0,400);
 
 			int len;
 			int rcv_sock;
@@ -905,7 +905,7 @@ static void * srv_handle(void * arg)
 			   }
 			   }
 			 */
-			len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
+			len = recv(cli_sockfd, &get_msg, 400, 0);
 			if(len<0)
 				continue;
 
@@ -994,6 +994,7 @@ static void * srv_handle(void * arg)
 						continue;
 					}
 					else{
+						pthread_mutex_unlock(&data_lock);
 						continue;
 					}
 				}
