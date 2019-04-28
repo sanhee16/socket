@@ -572,9 +572,6 @@ static void * srv_handle(void * arg)
 					   make_table[my_num]=1;
 					   pthread_create(&making_rr[my_num],NULL,RT_handler,NULL);
 					//create hanler : data;
-
-
-
 					}
 					 */
 					/*
@@ -582,8 +579,8 @@ static void * srv_handle(void * arg)
 					   exist_buf=0;
 					   memset(&buffer,0,sizeof(buffer));
 					   }*/
-					pthread_mutex_unlock(&lock);
-					continue;
+					//pthread_mutex_unlock(&lock);
+					//continue;
 				}
 
 				int snd_sockfd = buffer.cli_sockfd;
@@ -1189,6 +1186,8 @@ static void * srv_handle(void * arg)
 				}
 			}
 
+			//erase this 1!!!!!!!!!!!!!!!
+			/*
 			if(make_table==1){
 				rt_done=1;
 				//printf("fin table?? ");
@@ -1197,7 +1196,7 @@ static void * srv_handle(void * arg)
 					//printf(" next %d \n",edge[a]);
 				}
 			}
-
+			*/
 			pthread_mutex_unlock(&lock);
 		}
 		return 0;
