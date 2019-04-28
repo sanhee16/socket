@@ -961,7 +961,7 @@ static void * srv_handle(void * arg)
 				MSG_T snd_msg;
 				memset(&snd_msg,0,400);
 				memcpy(&snd_msg,&(data_buffer.data_recv_buf),400);
-
+				
 				int compare=-1;
 				if(*(snd_msg.recv_ip+14)=='1'){
 					compare=0;
@@ -979,7 +979,7 @@ static void * srv_handle(void * arg)
 					compare=4;
 				}
 
-				printf("recv ip is %s \n",snd_msg.recv_ip);
+				printf("recv ip is %s \n",snd_msg.snd_ip);
 				printf("compare %d my num %d \n\n",compare,my_num);
 				if(compare==my_num){
 					if(real_cli_srv_sockfd==cli_sockfd){
@@ -1026,19 +1026,12 @@ static void * srv_handle(void * arg)
 						continue;
 					}
 					if(rt.dest[a]==dest_num){
-					//	printf("dest node %d \n",rt.dest[a]);
-					//	printf("next node : %d (%d)\n",rt.next[a],rt.cost[a]);
 						fflush(NULL);
 
 						snd_sockfd=rt.next[a];
 						break;
 					}
 					else{
-					//	printf("dest node %d \n",rt.dest[a]);
-					//	printf("next node : %d (%d)\n",rt.next[a],rt.cost[a]);
-						fflush(NULL);
-
-					//	printf("cannot find neigh \n");
 						fflush(NULL);
 					}
 				}
