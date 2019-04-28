@@ -194,12 +194,14 @@ static void * real_srv_sndhandle(void *arg){
 	}
 
 	while(1){
-		pthread_mutex_lock(&srv_lock);
 
 		if(srv_data_exist_buf==1){
-			MSG_T snd_msg;
-			memcpy(&snd_msg,&(srv_data_buffer.recv_buf),400);
+			pthread_mutex_lock(&srv_lock);
 
+			MSG_T snd_msg;
+			memset(&snd_msg,0,400);
+			memcpy(&snd_msg.msg,&(srv_data_buffer.recv_buf.msg),362);
+			
 			strcpy(snd_msg.snd_ip,"220.149.244.211");
 			snd_msg.snd_port=4712;
 			snd_msg.recv_port=4712;
@@ -213,6 +215,7 @@ static void * real_srv_sndhandle(void *arg){
 					send(cli_sockfd,(char*)&snd_msg, 400, 0);
 				}
 			}
+			memset(&snd_msg,0,400);
 			srv_data_exist_buf=0;
 			memset(&srv_data_buffer,0,404);
 			fflush(NULL);
