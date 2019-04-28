@@ -200,78 +200,22 @@ static void * real_srv_sndhandle(void *arg){
 			MSG_T snd_msg;
 			memcpy(&snd_msg,&(srv_data_buffer.recv_buf),400);
 
-			//int snd_sockfd = data_buffer.cli_sockfd;
-			//snd all client
 			strcpy(snd_msg.snd_ip,"220.149.244.211");
-			//snd_msg.snd_ip="220.149.244.211";
 			snd_msg.snd_port=4712;
 			snd_msg.recv_port=4712;
-			/*
-			char* set[ROU_NUM];
 			for(int a=0;a<ROU_NUM;a++){
-				switch(a){
-					case 0:
-						strcpy(set[a],"220.149.244.211");
-						//set[a]="220.149.244.211";
-						break;
-					case 1:
-						strcpy(set[a],"220.149.244.212");
-						//set[a]="220.149.244.212";
-						break;
-					case 2:
-						strcpy(set[a],"220.149.244.213");
-						//set[a]="220.149.244.213";
-						break;
-					case 3:
-						strcpy(set[a],"220.149.244.214");
-						//set[a]="220.149.244.214";
-						break;
-					case 4:
-						strcpy(set[a],"220.149.244.215");
-						//set[a]="220.149.244.215";
-						break;
-					default:
-						break;
-				}
-			}
-			*/
-			for(int a=0;a<ROU_NUM;a++){
-				if(cli_list[a]==1){
+				if(cli_list[a]==1){ //send the msg -> all client
 					strcpy(snd_msg.recv_ip,set[a]);
-					//snd_msg.recv_ip = set[a];
+
+					printf("my ip is %s \n",snd_msg.snd_ip);
+					printf("send ip is %s \n",snd_msg.recv_ip);
+					
 					send(cli_sockfd,(char*)&snd_msg, 400, 0);
 				}
 			}
 			srv_data_exist_buf=0;
 			memset(&srv_data_buffer,0,404);
 			fflush(NULL);
-			//check routing table (rt) -> set snd_sockfd
-
-			/*
-			   int dest_num=-1;
-			   if(*(snd_msg.recv_ip + 14)=='1'){
-			   dest_num=0;
-			   }
-			   else if(*(snd_msg.recv_ip + 14)=='2'){
-			   dest_num=1;
-			   }
-			   else if(*(snd_msg.recv_ip + 14)=='3'){
-			   dest_num=2;
-			   }
-			   else if(*(snd_msg.recv_ip + 14)=='4'){
-			   dest_num=3;
-			   }
-			   else if(*(snd_msg.recv_ip + 14)=='5'){
-			   dest_num=4;
-			   }
-
-			   for(int a=0;a<ROU_NUM;a++){
-			   if(rt.dest[a]==dest_num){
-			   snd_sockfd=rt.next[a];
-			   break;
-			   }
-			   }
-			 */
 		}
 		fflush(NULL);
 		pthread_mutex_unlock(&srv_lock);
