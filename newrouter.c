@@ -472,7 +472,7 @@ static void * srv_handle(void * arg){
 		send(cli_sockfd, (char*)&first, sizeof(SND_CT), 0);
 		//perror("send");
 		while(1){
-			//print_CT();
+			print_CT();
 			//pthread_mutex_lock(&lock);
 			/*
 			if(done==1){
@@ -507,6 +507,20 @@ static void * srv_handle(void * arg){
 				}
 
 				arr_copy(snd_ct.CT, CT);
+				for(int x=0;x<ROU_NUM;x++){
+					if(CT[x][x]==0){
+						done=1;
+					}
+					else{
+						done=0;
+						break;
+					}
+				}
+				if(done==1){
+					make_table=1;
+				}
+				printf("done %d make table %d\n",done,make_table);
+				/*
 				snd_ct.visit[my_num]=1;
 				for(int x=0;x<ROU_NUM;x++){
 					if(snd_ct.visit[x]==1){
@@ -546,6 +560,7 @@ static void * srv_handle(void * arg){
 						print_CT();
 					}
 				}
+				*/
 				for(int a=0;a<ROU_NUM;a++){
 					if(get_buf[a]==0 &&my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){
 						int len = sizeof(snd_ct);
