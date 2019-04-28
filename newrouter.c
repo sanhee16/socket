@@ -907,21 +907,22 @@ static void * srv_handle(void * arg)
 			   }
 			}
 			*/
-			char getBuf[400];
-			len = recv(cli_sockfd, getBuf, 400, 0);
+			MSG_T* get_msg;
+			//char getBuf[400];
+			len = recv(cli_sockfd, get_msg, sizeof(MSG_T), 0);
 			if(len<0)
 				 continue;
 			
 			//len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 		
 			pthread_mutex_lock(&data_lock);
-			getBuf[400]='\0';
-			MSG_T* get_msg;
-			get_msg = (MSG_T*)getBuf;
+			//getBuf[400]='\0';
+			//MSG_T* get_msg;
+			//get_msg = (MSG_T*)getBuf;
 					
-			printf("data rcv : %s ",get_msg->msg);
-			printf("data rcv : %s ",get_msg->snd_ip);
-			printf("data rcv : %s ",get_msg->recv_ip);
+			printf("\ndata rcv(data) : %s ",get_msg->msg);
+			printf("data rcv(snd ip) : %s \n",get_msg->snd_ip);
+			printf("data rcv(recv ip) : %s \n",get_msg->recv_ip);
 			
 			//strncpy(data_buffer.data_recv_buf.msg, get_msg.msg,362);
 			//strncpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip,7);

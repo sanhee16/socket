@@ -147,6 +147,7 @@ static void * real_cli_rcvhandle(void *arg){
 		   }
 		 */
 		printf("wait");
+		fflush(NULL);	
 		len = recv(cli_sockfd, &get_msg ,sizeof(MSG_T), 0);
 		perror("recv");
 		if(len<0){
@@ -179,6 +180,7 @@ static void * real_cli_sndhandle(void *arg){
 		memset(&snd_msg,0,sizeof(MSG_T));
 		//char* read_buffer = (char *)malloc(362);
 		//ret = read(1, read_buffer, 362);
+		fflush(NULL);
 		ret = read(1, snd_msg.msg, 362);
 		fflush(NULL);
 		if(ret == -1) {
@@ -208,8 +210,9 @@ static void * real_cli_sndhandle(void *arg){
 		snd_msg.snd_port=4712;
 		snd_msg.recv_port=4712;
 
-		
-		send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+		send(cli_sockfd, &snd_msg, sizeof(MSG_T), 0);
+
+		//send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 		fflush(NULL);
 		pthread_mutex_unlock(&cli_data_lock);
 
