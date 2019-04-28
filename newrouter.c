@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
 	//pthread_create(&making_rr,NULL,RT_handler,NULL);
 
 
-	//pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
+	pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
 	if(my_num==0 || my_num==1 || my_num==2){
 		//pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 	}
