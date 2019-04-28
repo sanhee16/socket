@@ -921,15 +921,18 @@ static void * srv_handle(void * arg)
 			*/
 			//MSG_T* get_msg;
 			//char getBuf[400];
+			/*
 			MSG_T copy;
 			memset(&copy,0,sizeof(MSG_T));
 			len = recv(cli_sockfd, (char *)&copy, sizeof(MSG_T), 0);
-			//len = recv(cli_sockfd, (char *)&get_msg, sizeof(MSG_T), 0);
-			pthread_mutex_lock(&data_lock);
-			memcpy(&get_msg,&copy,sizeof(MSG_T));
-			memset(&copy,0,sizeof(MSG_T));
+			*/
+
+			len = recv(cli_sockfd, (char *)&get_msg, sizeof(MSG_T), 0);
+			//pthread_mutex_lock(&data_lock);
+			//memcpy(&get_msg,&copy,sizeof(MSG_T));
+			//memset(&copy,0,sizeof(MSG_T));
 			if(len<0){
-				pthread_mutex_unlock(&data_lock);	
+				//pthread_mutex_unlock(&data_lock);	
 		   		continue;
 			}
 			//len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
