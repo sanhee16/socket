@@ -164,29 +164,24 @@ static void * real_srv_sndhandle(void *arg){
 	size_t getline_len;
 	int ret;
 	int done=0;
-	char set[ROU_NUM][15];
+	char* set[ROU_NUM];
 
 	for(int a=0;a<ROU_NUM;a++){
 		switch(a){
 			case 0:
 				strcpy(set[a],"220.149.244.211");
-				//set[a]="220.149.244.211";
 				break;
 			case 1:
 				strcpy(set[a],"220.149.244.212");
-				//set[a]="220.149.244.212";
 				break;
 			case 2:
 				strcpy(set[a],"220.149.244.213");
-				//set[a]="220.149.244.213";
 				break;
 			case 3:
 				strcpy(set[a],"220.149.244.214");
-				//set[a]="220.149.244.214";
 				break;
 			case 4:
 				strcpy(set[a],"220.149.244.215");
-				//set[a]="220.149.244.215";
 				break;
 			default:
 				break;
@@ -200,13 +195,16 @@ static void * real_srv_sndhandle(void *arg){
 
 			MSG_T snd_msg;
 			memset(&snd_msg,0,400);
-			memcpy(&snd_msg.msg,&(srv_data_buffer.recv_buf.msg),362);
-			
+			memcpy(&snd_msg.msg, &(srv_data_buffer.recv_buf.msg),362);
+			printf("snd ip %s ",snd_msg.snd_ip);
+
 			strcpy(snd_msg.snd_ip,"220.149.244.211");
 			snd_msg.snd_port=4712;
 			snd_msg.recv_port=4712;
+
 			for(int a=0;a<ROU_NUM;a++){
 				if(cli_list[a]==1){ //send the msg -> all client
+					
 					strcpy(snd_msg.recv_ip,set[a]);
 
 					printf("my ip is %s \n",snd_msg.snd_ip);
