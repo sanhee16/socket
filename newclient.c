@@ -74,6 +74,8 @@ static void * real_client_handle(void * arg){
 		close(srv_sock);
 		return 0;
 	}
+
+	printf("clietn bind\n\n");
 	//pthread_create(&data_client, NULL, data_cli_handle, NULL);
 
 	//pthread_mutex_init(&data_lock, NULL);

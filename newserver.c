@@ -53,11 +53,6 @@ void main(){
 	return ;
 }
 
-
-
-
-
-
 static void * real_server_handle(void * arg){
 	int srv_sock, cli_sock;
 	int port_num, ret;
@@ -92,10 +87,12 @@ static void * real_server_handle(void * arg){
 		close(srv_sock);
 		return 0;
 	}
+	printf("----bind!! ----\n\n");
 	//pthread_create(&data_client, NULL, data_cli_handle, NULL);
 
 	pthread_mutex_init(&srv_lock, NULL);
 	pthread_cond_init(&srv_cond, NULL);
+	
 	ret = listen(srv_sock, 0);
 	if (ret == -1) {
 		perror("LISTEN stanby mode fail");
@@ -143,12 +140,13 @@ static void * real_srv_rcvhandle(void *arg){
 		int len;
 		//int rcv_sock;
 
-		len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
+		len = recv(cli_sockfd, &get_msg, 400, 0);
 		if(len<0)
 			continue;
+		printf("recv : %s ",get_msg.msg);
 		pthread_mutex_lock(&srv_lock);
 
-		memcpy(&(srv_data_buffer.recv_buf),&get_msg,sizeof(MSG_T));
+		memcpy(&(srv_data_buffer.recv_buf),&get_msg,400);
 		srv_data_buffer.cli_sockfd = cli_sockfd;
 
 		srv_data_exist_buf=1;
