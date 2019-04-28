@@ -12,8 +12,26 @@
 
 
 #include "fileopen.h"
-#include "making_rt.h"
+//#include "making_rt.h"
 #define CLI_NUM 2
+//
+
+pthread_mutex_t lock;
+
+int edge[ROU_NUM];
+int fin_table[ROU_NUM];
+int make_table=0;
+int rt_done=0;
+typedef struct routing{
+	int dest[ROU_NUM];
+	int next[ROU_NUM];
+	int cost[ROU_NUM];
+}route_table;
+
+route_table rt;
+
+void print_CT();
+
 
 //#include "data_handle_router.h"
 
@@ -56,6 +74,7 @@ typedef struct buf{
 	SND_CT recv_buf;
 	int cli_sockfd;
 }BUF;
+
 ///////////////////////////////////////////////DATA/////////////
 pthread_t data_rcv_thread[100];
 pthread_t data_snd_thread[100];
@@ -74,8 +93,7 @@ static void *data_sndhandle(void * arg);
 static void *data_rcvhandle(void * arg);
 static void * data_srv_connect_handle(void * arg);
 static void * data_srv_listen_handler(void * arg);
-
-
+static void * RT_handler(void *arg);
 
 pthread_t data_client;
 pthread_t data_server;
@@ -705,6 +723,7 @@ static void * srv_handle(void * arg)
 			if(rt_done==1)
 				break;
 		}
+		printf("ready to send \n");
 		int srv_sock, cli_sock;
 		int port_num, ret1;
 		struct sockaddr_in addr;
@@ -768,30 +787,30 @@ static void * srv_handle(void * arg)
 
 		int cli_sock = *(int *)arg;
 
-			int ret = -1;
-			char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
-			/* get peer addr */
-			struct sockaddr peer_addr;
-			socklen_t peer_addr_len;
-			memset(&peer_addr, 0, sizeof(peer_addr));
-			peer_addr_len = sizeof(peer_addr);
-			ret = getpeername(cli_sock, &peer_addr, &peer_addr_len);
-			ret = getnameinfo(&peer_addr, peer_addr_len,
-					hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
-					NI_NUMERICHOST | NI_NUMERICSERV);
+		int ret = -1;
+		char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+		/* get peer addr */
+		struct sockaddr peer_addr;
+		socklen_t peer_addr_len;
+		memset(&peer_addr, 0, sizeof(peer_addr));
+		peer_addr_len = sizeof(peer_addr);
+		ret = getpeername(cli_sock, &peer_addr, &peer_addr_len);
+		ret = getnameinfo(&peer_addr, peer_addr_len,
+				hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
+				NI_NUMERICHOST | NI_NUMERICSERV);
 
-			if(ret != 0){
-				ret = -1;
-				pthread_exit(&ret);
-			}
+		if(ret != 0){
+			ret = -1;
+			pthread_exit(&ret);
+		}
 
-			//	pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sockarr[a]);
-			//	data_router_num++;
-			//	a++;
-		
-			printf("make data thread ip %s clisock %d \n",hbuf,cli_sock);
-			pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sock);
-			data_router_num++;
+		//	pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sockarr[a]);
+		//	data_router_num++;
+		//	a++;
+
+		printf("make data thread ip %s clisock %d \n",hbuf,cli_sock);
+		pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sock);
+		data_router_num++;
 
 		while(1){
 		}
@@ -1065,5 +1084,132 @@ static void * srv_handle(void * arg)
 		//`printf("\n\n---------done-----------\n\n");
 		//print_CT();
 		while(1);
+	}
+
+
+
+
+
+
+
+	static void * RT_handler(void *arg){
+		//makeCT();
+		//print_CT();
+		//int done = *(int *)arg;
+
+		while(1){
+			printf("--------------------------RT%d ---------------------------",rt_done);
+			if(rt_done==1){
+				break;
+			}
+			pthread_mutex_lock(&lock);
+			print_CT();
+			int d[ROU_NUM];
+			int set_s[ROU_NUM];
+			int set_c[ROU_NUM];
+
+			for(int a=0;a<ROU_NUM;a++){
+				d[a]=INFINITE;
+				edge[a]=0;
+				set_c[a]=1;
+				set_s[a]=0;
+				rt.dest[a]=a;
+				rt.next[a]=-1;
+				rt.cost[a]=-1;
+			}
+			for(int a=0;a<ROU_NUM;a++){
+				//printf("%d ",d[a]);
+			}
+			int source = my_num;
+
+			d[source]=0;
+			int u=-1;
+			int v=-1;
+			int small=-1;
+			int small_dist=INFINITE+1;
+
+			for(int count=0; count<ROU_NUM; count++){
+				small=-1;
+				small_dist=INFINITE+1;
+				u=-1; v=-1;
+				for(int b=0;b<ROU_NUM;b++){
+					if((set_c[b]==1) && (small_dist > d[b])){
+						small_dist = d[b];
+						small = b;
+					}
+				}
+				set_c[small]=0;
+				set_s[small]=1;
+				u=small;
+				for(int b=0;b<ROU_NUM;b++){
+					v=-1;
+					if(set_c[b]==0)
+						continue;
+					v=b;
+					//      printf("u is %d , v is %d \n",u,v);
+					if(d[v] > CT[u][v]+d[u]){
+						d[v]=CT[u][v]+d[u];
+						edge[v]=u;
+						//rt.next[v]=edge[v];
+						int search_n=v;
+						while(1){
+							if(edge[search_n]==source){
+								rt.next[v]=search_n;
+								break;
+							}
+							search_n=edge[search_n];
+						}
+						rt.cost[v]=d[v];
+					}
+				}
+			}
+			//      printf("\n\n------result------\n\n");
+			for(int a=0;a<ROU_NUM;a++){
+				//printf("%d -> %d : %d",source, a, d[a]);
+				//printf(" next %d \n",edge[a]);
+			}
+			printf("\n\n------routing table------\n\n");
+			printf(" dest next cost \n");
+			for(int a=0;a<ROU_NUM;a++){
+				//if(a==my_num)
+				//      continue;
+				printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
+				printf("\n");
+			}
+			//printf("RTRTRTRTRT MAKE TABLE ??? %d \n\n",make_table);
+
+			for(int a=0;a<ROU_NUM;a++){
+				if(CT[a][a]==0){
+					rt_done=1;
+				}
+				else{
+					rt_done=0;
+					break;
+				}
+			}
+
+			if(make_table==1){
+				rt_done=1;
+				//printf("fin table?? ");
+				for(int a=0;a<ROU_NUM;a++){
+					//printf("%d -> %d : %d",source, a, d[a]);
+					//printf(" next %d \n",edge[a]);
+				}
+			}
+			
+			pthread_mutex_unlock(&lock);
+		}
+		return 0;
+	}
+
+
+
+	void print_CT(){
+		for(int a=0;a<ROU_NUM;a++){
+			for(int b=0;b<ROU_NUM;b++){
+				printf("%6d ",CT[a][b]);
+			}
+			printf("\n");
+		}
 	}
 
