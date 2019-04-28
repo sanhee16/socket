@@ -721,10 +721,10 @@ static void * srv_handle(void * arg)
 	static void * data_srv_handle(void * arg){
 		/*
 		   while(1){
-			if(rt_done==1)
-				break;
-		}
-		*/
+		   if(rt_done==1)
+		   break;
+		   }
+		 */
 		printf("ready to connect \n");
 		int srv_sock, cli_sock;
 		int port_num, ret1;
@@ -949,12 +949,12 @@ static void * srv_handle(void * arg)
 		int ret;
 		int done=0;
 		/*
-		while(1){
-			if(rt_done==1){
-				break;
-			}
-		}
-		*/
+		   while(1){
+		   if(rt_done==1){
+		   break;
+		   }
+		   }
+		 */
 		/*	while(1){
 			pthread_mutex_lock(&data_lock);
 			if(make_table==1){
@@ -978,25 +978,22 @@ static void * srv_handle(void * arg)
 				memcpy(&snd_msg,&(data_buffer.data_recv_buf),sizeof(MSG_T));
 
 				int compare=-1;
-				switch(*(snd_msg.recv_ip+14)){
-					case '1':
-						compare=0;
-						break;
-					case '2':
-						compare=1;
-						break;
-					case '3':
-						compare=2;
-						break;
-					case '4':
-						compare=3;
-						break;
-					case '5':
-						compare=4;
-						break;
-					default:
-						break;
+				if(*(snd_msg.recv_ip+14)=='1'){
+					compare=0;
 				}
+				else if(*(snd_msg.recv_ip+14)=='2'){
+					compare=1;
+				}
+				else if(*(snd_msg.recv_ip+14)=='3'){
+					compare=2;
+				}
+				else if(*(snd_msg.recv_ip+14)=='4'){
+					compare=3;
+				}
+				else if(*(snd_msg.recv_ip+14)=='5'){
+					compare=4;
+				}
+
 				printf("recv ip is %s \n",snd_msg.recv_ip);
 				printf("compare %d my num %d \n\n",compare,my_num);
 				if(compare==my_num){
@@ -1200,7 +1197,7 @@ static void * srv_handle(void * arg)
 					//printf(" next %d \n",edge[a]);
 				}
 			}
-			
+
 			pthread_mutex_unlock(&lock);
 		}
 		return 0;
