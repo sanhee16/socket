@@ -1054,7 +1054,7 @@ static void * data_sndhandle(void *arg){
 				printf("compare %d my num %d \n\n",compare,my_num);
 				if(compare==my_num){
 					if(real_cli_srv_sockfd==cli_sockfd){
-						pthread_mutex_lock(&data_lock);
+						//pthread_mutex_lock(&data_lock);
 						//if this thread is connected to server, then send msg
 						send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 						printf("send to server !\n");
@@ -1072,6 +1072,7 @@ static void * data_sndhandle(void *arg){
 						continue;
 					}
 					else{
+						pthread_mutex_unlock(&data_lock);
 						continue;
 					}
 				}
