@@ -920,8 +920,8 @@ static void * srv_handle(void * arg)
 			printf("data rcv : %s ",get_msg.recv_ip);
 			
 			strncpy(data_buffer.data_recv_buf.msg, get_msg.msg,362);
-			strncpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip,15);
-			strncpy(data_buffer.data_recv_buf.recv_ip, get_msg.recv_ip,15);
+			strncpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip,7);
+			strncpy(data_buffer.data_recv_buf.recv_ip, get_msg.recv_ip,7);
 			data_buffer.data_recv_buf.snd_port = get_msg.snd_port;
 			data_buffer.data_recv_buf.recv_port = get_msg.recv_port;
 
