@@ -969,6 +969,11 @@ static void * data_rcvhandle(void *arg){
 			if(data_exist_buf_arr[ch]==0){
 				data_exist_buf_arr[ch]=1;
 				memcpy(&buffer_arr[ch],&data_buffer.data_recv_buf,sizeof(MSG_T));
+				if(*(data_buffer.data_recv_buf.snd_ip+14)=='1'){
+					ch++;
+					data_exist_buf_arr[ch]=1;
+					memcpy(&buffer_arr[ch],&data_buffer.data_recv_buf,sizeof(MSG_T));
+				}
 				//memset(&data_buffer,0,sizeof(DATA_BUF));
 				break;
 			}
