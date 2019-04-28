@@ -92,7 +92,7 @@ static void * real_server_handle(void * arg){
 
 	pthread_mutex_init(&srv_lock, NULL);
 	pthread_cond_init(&srv_cond, NULL);
-	
+
 	ret = listen(srv_sock, 0);
 	if (ret == -1) {
 		perror("LISTEN stanby mode fail");
@@ -121,7 +121,7 @@ static void * real_server_handle(void * arg){
 		perror("cli_sock connect ACCEPT fail");
 		close(srv_sock);
 	}
-	
+
 	pthread_create(&real_srv_rcvthread,NULL,real_srv_rcvhandle,&cli_acc);
 	pthread_create(&real_srv_sndthread,NULL,real_srv_sndhandle,&cli_acc);
 	while(1){
@@ -164,12 +164,41 @@ static void * real_srv_sndhandle(void *arg){
 	size_t getline_len;
 	int ret;
 	int done=0;
+	char set[ROU_NUM][15];
+
+	for(int a=0;a<ROU_NUM;a++){
+		switch(a){
+			case 0:
+				strcpy(set[a],"220.149.244.211");
+				//set[a]="220.149.244.211";
+				break;
+			case 1:
+				strcpy(set[a],"220.149.244.212");
+				//set[a]="220.149.244.212";
+				break;
+			case 2:
+				strcpy(set[a],"220.149.244.213");
+				//set[a]="220.149.244.213";
+				break;
+			case 3:
+				strcpy(set[a],"220.149.244.214");
+				//set[a]="220.149.244.214";
+				break;
+			case 4:
+				strcpy(set[a],"220.149.244.215");
+				//set[a]="220.149.244.215";
+				break;
+			default:
+				break;
+		}
+	}
+
 	while(1){
 		pthread_mutex_lock(&srv_lock);
 
 		if(srv_data_exist_buf==1){
 			MSG_T snd_msg;
-			memcpy(&snd_msg,&(srv_data_buffer.recv_buf),sizeof(MSG_T));
+			memcpy(&snd_msg,&(srv_data_buffer.recv_buf),400);
 
 			//int snd_sockfd = data_buffer.cli_sockfd;
 			//snd all client
@@ -177,6 +206,7 @@ static void * real_srv_sndhandle(void *arg){
 			//snd_msg.snd_ip="220.149.244.211";
 			snd_msg.snd_port=4712;
 			snd_msg.recv_port=4712;
+			/*
 			char* set[ROU_NUM];
 			for(int a=0;a<ROU_NUM;a++){
 				switch(a){
@@ -204,15 +234,16 @@ static void * real_srv_sndhandle(void *arg){
 						break;
 				}
 			}
+			*/
 			for(int a=0;a<ROU_NUM;a++){
 				if(cli_list[a]==1){
 					strcpy(snd_msg.recv_ip,set[a]);
 					//snd_msg.recv_ip = set[a];
-					send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+					send(cli_sockfd,(char*)&snd_msg, 400, 0);
 				}
 			}
 			srv_data_exist_buf=0;
-			memset(&srv_data_buffer,0,sizeof(DATA_BUF));
+			memset(&srv_data_buffer,0,404);
 			fflush(NULL);
 			//check routing table (rt) -> set snd_sockfd
 
