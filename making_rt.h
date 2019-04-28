@@ -17,7 +17,7 @@ void print_CT();
 
 static void * RT_handler(void *arg){
 	//makeCT();
-	print_CT();
+	//print_CT();
 	//int done = *(int *)arg;
 	while(1){
 		//print_CT();
@@ -97,10 +97,10 @@ static void * RT_handler(void *arg){
 
 		if(make_table==1){
 			rt_done=1;
-			printf("fin table?? ");
+			//printf("fin table?? ");
 			for(int a=0;a<ROU_NUM;a++){
-				printf("%d -> %d : %d",source, a, d[a]);
-				printf(" next %d \n",edge[a]);
+				//printf("%d -> %d : %d",source, a, d[a]);
+				//printf(" next %d \n",edge[a]);
 			}
 		}
 	}

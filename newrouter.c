@@ -549,7 +549,6 @@ static void * srv_handle(void * arg)
 					}
 					 */
 					//buf_count--;
-					printf("\n\n-------------client finish----------------------\n\n");
 					//make_table=1;
 					/*
 					   if(make_table[my_num]==0){
