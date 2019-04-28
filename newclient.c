@@ -202,11 +202,13 @@ static void * real_cli_sndhandle(void *arg){
 		}
 		printf("senmd ip is %s \n",snd_msg.snd_ip);
 		strcpy(snd_msg.recv_ip,"220.149.244.211");
+		printf("send recv %s \n",snd_msg.recv_ip);
 		//snd_msg.snd_ip="220.149.244.212";
 		//snd_msg.recv_ip="220.149.244.211";
 		snd_msg.snd_port=4712;
 		snd_msg.recv_port=4712;
 
+		
 		send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 		fflush(NULL);
 		pthread_mutex_unlock(&cli_data_lock);
