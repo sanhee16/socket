@@ -164,7 +164,7 @@ static void * real_srv_sndhandle(void *arg){
 	size_t getline_len;
 	int ret;
 	int done=0;
-	char* set[ROU_NUM];
+	char set[ROU_NUM][15];
 
 	for(int a=0;a<ROU_NUM;a++){
 		switch(a){
