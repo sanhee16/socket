@@ -703,6 +703,10 @@ static void * srv_handle(void * arg){
 
 
 	static void * data_srv_handle(void * arg){
+		while(1){
+			if(rt_done==1)
+				break;
+		}
 		int srv_sock, cli_sock;
 		int port_num, ret1;
 		struct sockaddr_in addr;
