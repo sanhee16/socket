@@ -231,7 +231,6 @@ static void * srv_handle(void * arg){
 		if(ret != 0){
 			ret = -1;
 			pthread_exit(&ret);
-			continue;
 		}
 
 
@@ -257,9 +256,9 @@ static void * srv_handle(void * arg){
 		else if(*(hbuf+14)=='5'){
 			neighbor_sock_srv[4]=cli_sockarr[a];
 		}
-		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
-		router_num++;
-		a++;
+		//pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
+		//router_num++;
+		//a++;
 
 	}
 	
@@ -269,10 +268,10 @@ static void * srv_handle(void * arg){
 	   router_num++;
 
 	   }
-	/* 
+	 
 	while(1){
 	}
-*/
+
 }
 
 static void * cli_handle(void *arg){
@@ -668,8 +667,6 @@ static void * data_srv_handle(void * arg){
 	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
 
 	for(int a=0; a<count_srv; a++){
-	//int a=0;
-	//while(1){
 		ret1 = listen(srv_sock, 0);
 		if (ret1 == -1) {
 			perror("LISTEN stanby mode fail");
@@ -695,13 +692,11 @@ static void * data_srv_handle(void * arg){
 		if(ret != 0){
 			ret = -1;
 			pthread_exit(&ret);
-			continue;
 		}
 
 		if (cli_sockarr[a] == -1) {
 			perror("cli_sock connect ACCEPT fail");
 			close(srv_sock);
-			//return 0;
 		}
 	//	pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sockarr[a]);
 	//	data_router_num++;
@@ -713,10 +708,8 @@ static void * data_srv_handle(void * arg){
 	   data_router_num++;
 
 	   }
-	/*
 	   while(1){
 	}
-	*/
 }
 
 
