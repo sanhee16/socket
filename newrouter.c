@@ -909,13 +909,18 @@ static void * srv_handle(void * arg)
 			*/
 			//MSG_T* get_msg;
 			//char getBuf[400];
+			/*
 			len = recv(cli_sockfd, (char *)&get_msg, sizeof(MSG_T), 0);
 			if(len<0)
 				 continue;
-			
+			*/
 			//len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 		
 			pthread_mutex_lock(&data_lock);
+			len = recv(cli_sockfd, (char *)&get_msg, sizeof(MSG_T), 0);
+			            if(len<0)
+							                 continue;
+
 			//getBuf[400]='\0';
 			//MSG_T* get_msg;
 			//get_msg = (MSG_T*)getBuf;

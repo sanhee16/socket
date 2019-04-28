@@ -215,6 +215,7 @@ static void * real_srv_sndhandle(void *arg){
 					printf("send ip is %s \n",snd_msg.recv_ip);
 					
 					send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+					perror("send");
 				}
 			}
 			memset(&snd_msg,0,sizeof(MSG_T));
