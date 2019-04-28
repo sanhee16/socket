@@ -1038,31 +1038,31 @@ static void * srv_handle(void * arg)
 						continue;
 					}
 					if(rt.dest[a]==dest_num){
-						printf("dest node %d \n",rt.dest[a]);
-						printf("next node : %d (%d)\n",rt.next[a],rt.cost[a]);
+					//	printf("dest node %d \n",rt.dest[a]);
+					//	printf("next node : %d (%d)\n",rt.next[a],rt.cost[a]);
 						fflush(NULL);
 
 						snd_sockfd=rt.next[a];
 						break;
 					}
 					else{
-						printf("dest node %d \n",rt.dest[a]);
-						printf("next node : %d (%d)\n",rt.next[a],rt.cost[a]);
+					//	printf("dest node %d \n",rt.dest[a]);
+					//	printf("next node : %d (%d)\n",rt.next[a],rt.cost[a]);
 						fflush(NULL);
 
-						printf("cannot find neigh \n");
+					//	printf("cannot find neigh \n");
 						fflush(NULL);
 					}
 				}
 
-				printf("snd_sockfd is %d my neig? %d \n",snd_sockfd,my_neighbor[snd_sockfd]);
-				printf("neig %d | cli %d \n",data_neighbor_sock[snd_sockfd],cli_sockfd);
+			//	printf("snd_sockfd is %d my neig? %d \n",snd_sockfd,my_neighbor[snd_sockfd]);
+			//	printf("neig %d | cli %d \n",data_neighbor_sock[snd_sockfd],cli_sockfd);
 				fflush(NULL);
 
-				pthread_mutex_lock(&data_lock);
 				if(my_neighbor[snd_sockfd]==1 && data_neighbor_sock[snd_sockfd]==cli_sockfd){
-					printf("snd_sockfd is %d \n",snd_sockfd);
-					printf("neig %d | cli %d \n",data_neighbor_sock[snd_sockfd],cli_sockfd);
+					pthread_mutex_lock(&data_lock);
+				//	printf("snd_sockfd is %d \n",snd_sockfd);
+				//	printf("neig %d | cli %d \n",data_neighbor_sock[snd_sockfd],cli_sockfd);
 					fflush(NULL);
 					send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
 					perror("send");
