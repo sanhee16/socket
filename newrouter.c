@@ -22,7 +22,8 @@ pthread_t rcv_thread[100];
 pthread_t snd_thread[100];
 pthread_t server;
 pthread_t client;
-pthread_t making_rr;
+//pthread_t making_rr;
+pthread_t making_rr[ROU_NUM];
 pthread_t cli_srv_connect_thread;
 pthread_t data_srv_thread;
 
@@ -147,7 +148,7 @@ int main(int argc, char *argv[])
 	pthread_create(&server, NULL, srv_handle, NULL);
 	//pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
 	//pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
-	pthread_create(&making_rr,NULL,RT_handler,NULL);
+	//pthread_create(&making_rr,NULL,RT_handler,NULL);
 
 
 	pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
@@ -469,28 +470,35 @@ static void * srv_handle(void * arg){
 		first.finish=0;
 		send(cli_sockfd, (char*)&first, sizeof(SND_CT), 0);
 		//perror("send");
-
 		//RT_handler(&done);
 		pthread_create(&making_rr[my_num],NULL,RT_handler,&done);
 		while(1){
 			pthread_mutex_lock(&lock);
 
 			if(done==1){
+				make_table=1;
+				/*
 				if(make_table[my_num]==0){
 					make_table[my_num]=1;
 				}
+				*/
 			}
 			if(exist_buf==1){
 				SND_CT snd_ct;
 				memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
 				if(buffer.recv_buf.check_fin==1){
+					make_table=1;
+				/*
 					if(make_table[my_num]==0){
 						make_table[my_num]=1;
 						//fin_table[my_num]=1;
 					}
+					*/
 					//buf_count--;
 					printf("\n\n-------------client finish----------------------\n\n");
 					print_CT();
+					//make_table=1;
+					while(1){}
 					/*
 					   if(make_table[my_num]==0){
 					   make_table[my_num]=1;
@@ -1015,6 +1023,10 @@ static void * srv_handle(void * arg){
 						break;
 					}
 					else{
+						printf("dest node %d \n",rt.dest[a]);
+						printf("next node : %d (%d)\n",rt.next[a],rt.cost[a]);
+						fflush(NULL);
+
 						printf("cannot find neigh \n");
 						fflush(NULL);
 					}
