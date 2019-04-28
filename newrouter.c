@@ -321,15 +321,10 @@ static void * srv_handle(void * arg)
 			neighbor_sock_srv[4]=cli_sock;
 		}
 
-
 		printf("route : ip %s \n clisock %d \n",hbuf,cli_sock);
 		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sock);
 		router_num++;
-
-
 	}
-
-
 
 	static void * cli_handle(void *arg){
 
@@ -359,7 +354,7 @@ static void * srv_handle(void * arg)
 						con_done[a]=1;
 
 						pthread_create(&snd_thread[router_num],NULL,sndhandle,&make_fd);
-						printf("make cli \n\n");
+						printf("make cli fd %d ip %s \n\n",make_fd, send_ip);
 						client_num++;
 						router_num++;
 					}
