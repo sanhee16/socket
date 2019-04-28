@@ -894,6 +894,7 @@ static void * srv_handle(void * arg)
 			MSG_T get_msg;
 			memset(&get_msg,0,sizeof(MSG_T));
 
+			printf("get init %s \n",get_msg.msg);
 			int len;
 			int rcv_sock;
 			/*
@@ -912,7 +913,9 @@ static void * srv_handle(void * arg)
 
 			pthread_mutex_lock(&data_lock);
 
+			
 			printf("data rcv : %s ",get_msg.msg);
+			
 			strcpy(data_buffer.data_recv_buf.msg, get_msg.msg);
 			strcpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip);
 			strcpy(data_buffer.data_recv_buf.recv_ip, get_msg.recv_ip);
