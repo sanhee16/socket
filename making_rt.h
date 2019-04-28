@@ -19,8 +19,10 @@ static void * RT_handler(void *arg){
 	//makeCT();
 	//print_CT();
 	//int done = *(int *)arg;
+	
+	printf("--------------------------RT---------------------------");
 	while(1){
-		//print_CT();
+		print_CT();
 		int d[ROU_NUM];
 		int set_s[ROU_NUM];
 		int set_c[ROU_NUM];
@@ -85,13 +87,13 @@ static void * RT_handler(void *arg){
 			//printf("%d -> %d : %d",source, a, d[a]);
 			//printf(" next %d \n",edge[a]);
 		}
-			//printf("\n\n------routing table------\n\n");
-			//printf(" dest next cost \n");
+			printf("\n\n------routing table------\n\n");
+			printf(" dest next cost \n");
 		for(int a=0;a<ROU_NUM;a++){
 			//if(a==my_num)
 			//	continue;
-			//printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
-			//printf("\n");
+			printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
+			printf("\n");
 		}
 		//printf("RTRTRTRTRT MAKE TABLE ??? %d \n\n",make_table);
 

@@ -762,8 +762,6 @@ static void * srv_handle(void * arg)
 			}
 			pthread_create(&tids[thds], NULL, data_srv_listen_handler, &cli_sockarr);
 			thds++;
-
-
 		}
 	}
 	static void * data_srv_listen_handler(void * arg){
