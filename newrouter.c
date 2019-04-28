@@ -915,12 +915,14 @@ static void * srv_handle(void * arg)
 
 			
 			printf("data rcv : %s ",get_msg.msg);
+			printf("data rcv : %s ",get_msg.snd_ip);
+			printf("data rcv : %s ",get_msg.recv_ip);
 			
 			strcpy(data_buffer.data_recv_buf.msg, get_msg.msg);
 			strcpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip);
 			strcpy(data_buffer.data_recv_buf.recv_ip, get_msg.recv_ip);
-			data_buffer.data_recv_buf.snd_port=get_msg.snd_port;
-			data_buffer.data_recv_buf.recv_port=get_msg.recv_port;
+			data_buffer.data_recv_buf.snd_port = get_msg.snd_port;
+			data_buffer.data_recv_buf.recv_port = get_msg.recv_port;
 
 			//memcpy(&(data_buffer.data_recv_buf),&get_msg,sizeof(MSG_T));
 			data_buffer.cli_sockfd = cli_sockfd;
