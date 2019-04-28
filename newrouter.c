@@ -998,7 +998,7 @@ static void * srv_handle(void * arg)
 						break;
 				}
 				printf("recv ip is %s \n",snd_msg.recv_ip);
-				printf("compare %c my num %d \n\n",compare,my_num);
+				printf("compare %d my num %d \n\n",compare,my_num);
 				if(compare==my_num){
 					if(real_cli_srv_sockfd==cli_sockfd){
 						pthread_mutex_lock(&data_lock);
