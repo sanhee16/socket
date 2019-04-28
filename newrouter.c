@@ -483,106 +483,123 @@ static void * srv_handle(void * arg){
 			   }
 			 */
 
-			if(exist_buf==1){
+			if(exist_buf==1 && get_buf[my_num]==0){
 				pthread_mutex_lock(&lock);
 				SND_CT snd_ct;
 				if(make_table==1){
-				arr_copy(snd_ct.CT, CT);
-			}
-			else{	
-				SND_CT snd_ct;
-				memcpy(&snd_ct, &(buffer.recv_buf), sizeof(SND_CT));
-				int snd_sockfd = buffer.cli_sockfd;
-
-				for(int a=0;a<ROU_NUM;a++){ //CT update
-					for(int b=0;b<ROU_NUM;b++){
-						if(buffer.recv_buf.CT[a][b]==INFINITE && CT[a][b]==INFINITE){
-							//CT[a][b]=CT[a][b];
-						}
-						else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]==INFINITE){
-							CT[a][b]=buffer.recv_buf.CT[a][b];
-						}
-						else if(buffer.recv_buf.CT[a][b]== INFINITE && CT[a][b]!=INFINITE){
-							//buffer.recv_buf.CT[a][b]=CT[a][b];
-							//CT[a][b]=CT[a][b];
-						}
-						else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]!=INFINITE){
-							CT[a][b]=buffer.recv_buf.CT[a][b];
-						}
-					}
+					arr_copy(snd_ct.CT, CT);
 				}
-			
-				arr_copy(snd_ct.CT, CT);
-				for(int x=0;x<ROU_NUM;x++){
-					if(CT[x][x]==0){
-						done=1;
-					}
-					else{
-						done=0;
-						break;
-					}
-				}
-				if(done==1){
-					make_table=1;
-				}
-				printf("done %d make table %d\n",done,make_table);
-				/*
-				   snd_ct.visit[my_num]=1;
-				   for(int x=0;x<ROU_NUM;x++){
-				   if(snd_ct.visit[x]==1){
+				else{	
+					SND_CT snd_ct;
+					memcpy(&snd_ct, &(buffer.recv_buf), sizeof(SND_CT));
+					int snd_sockfd = buffer.cli_sockfd;
 
-				   }
-				   else{
-				   snd_ct.finish=0;
-				   break;
-				   }
-				   snd_ct.finish=1;
-				   }
-				   if(snd_ct.finish==1){
-				   snd_ct.check_finish[my_num]=1;
-				   }
-				   if(loop_onetime==0){
-				   if(buffer.recv_buf.finish==1){
-				   for(int x=0;x<ROU_NUM;x++){
-				   if(snd_ct.check_finish[x]==1){
-
-				   }
-				   else if(snd_ct.check_finish[x]!=1){
-				   snd_ct.check_fin=0;
-				   done=0;
-				   break;
-				   }
-				   snd_ct.check_fin=1;
-				   done=1;
-				   }
-				   }
-				   }
-
-				   if(done==1){
-				   loop_onetime=1;
-				   if(make_table==0){
-				   make_table=1;
-				   printf("done \n");
-				   print_CT();
-				   }
-				   }
-				 */
-			}
-				for(int a=0;a<ROU_NUM;a++){
-					if(get_buf[a]==0 && my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){
-						int len = sizeof(snd_ct);
-						send(neighbor_sock[a],(char*)&snd_ct, sizeof(SND_CT), 0);
-						get_buf[a]=1;
-						buf_count--;
-						if(buf_count==0){
-							for(int b=0;b<ROU_NUM;b++){
-								get_buf[b]=0;
+					for(int a=0;a<ROU_NUM;a++){ //CT update
+						for(int b=0;b<ROU_NUM;b++){
+							if(buffer.recv_buf.CT[a][b]==INFINITE && CT[a][b]==INFINITE){
+								//CT[a][b]=CT[a][b];
 							}
-							exist_buf=0;
-							memset(&buffer,0,sizeof(buffer));
+							else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]==INFINITE){
+								CT[a][b]=buffer.recv_buf.CT[a][b];
+							}
+							else if(buffer.recv_buf.CT[a][b]== INFINITE && CT[a][b]!=INFINITE){
+								//buffer.recv_buf.CT[a][b]=CT[a][b];
+								//CT[a][b]=CT[a][b];
+							}
+							else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]!=INFINITE){
+								CT[a][b]=buffer.recv_buf.CT[a][b];
+							}
 						}
 					}
+
+					arr_copy(snd_ct.CT, CT);
+					for(int x=0;x<ROU_NUM;x++){
+						if(CT[x][x]==0){
+							done=1;
+						}
+						else{
+							done=0;
+							break;
+						}
+					}
+					if(done==1){
+						make_table=1;
+					}
+					printf("done %d make table %d\n",done,make_table);
+					/*
+					   snd_ct.visit[my_num]=1;
+					   for(int x=0;x<ROU_NUM;x++){
+					   if(snd_ct.visit[x]==1){
+
+					   }
+					   else{
+					   snd_ct.finish=0;
+					   break;
+					   }
+					   snd_ct.finish=1;
+					   }
+					   if(snd_ct.finish==1){
+					   snd_ct.check_finish[my_num]=1;
+					   }
+					   if(loop_onetime==0){
+					   if(buffer.recv_buf.finish==1){
+					   for(int x=0;x<ROU_NUM;x++){
+					   if(snd_ct.check_finish[x]==1){
+
+					   }
+					   else if(snd_ct.check_finish[x]!=1){
+					   snd_ct.check_fin=0;
+					   done=0;
+					   break;
+					   }
+					   snd_ct.check_fin=1;
+					   done=1;
+					   }
+					   }
+					   }
+
+					   if(done==1){
+					   loop_onetime=1;
+					   if(make_table==0){
+					   make_table=1;
+					   printf("done \n");
+					   print_CT();
+					   }
+					   }
+					 */
 				}
+				
+				int len = sizeof(snd_ct);
+				send(cli_sockfd,(char*)&snd_ct, sizeof(SND_CT), 0);
+				get_buf[my_num]=1;
+				buf_count--;
+
+				if(buf_count==0){
+					for(int b=0;b<ROU_NUM;b++){
+						get_buf[b]=0;
+					}
+					exist_buf=0;
+					memset(&buffer,0,sizeof(buffer));
+				}
+
+				/*
+				   for(int a=0;a<ROU_NUM;a++){
+
+				//if(get_buf[a]==0 && my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){
+				int len = sizeof(snd_ct);
+				send(neighbor_sock[a],(char*)&snd_ct, sizeof(SND_CT), 0);
+				get_buf[a]=1;
+				buf_count--;
+				if(buf_count==0){
+				for(int b=0;b<ROU_NUM;b++){
+				get_buf[b]=0;
+				}
+				exist_buf=0;
+				memset(&buffer,0,sizeof(buffer));
+				}
+				}
+				}
+				 */
 				fflush(NULL);
 				pthread_mutex_unlock(&lock);
 			}//if(exist_buf==1)
