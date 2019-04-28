@@ -206,6 +206,9 @@ static void * srv_handle(void * arg)
 	addr.sin_addr.s_addr = htons (INADDR_ANY);
 	addr.sin_port = htons (port_num);
 
+	int nSockOpt=1;
+	setsockopt(srv_sock,SOL_SOCKET,SO_REUSEADDR,&nSockOpt,sizeof(nSockOpt));
+
 	ret1 = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
 
 	if (ret1 == -1) 
@@ -548,39 +551,12 @@ static void * srv_handle(void * arg)
 
 			if(done==1){
 				make_table=1;
-				/*
-				   if(make_table[my_num]==0){
-				   make_table[my_num]=1;
-				   }
-				 */
 			}
 			if(exist_buf==1){
 				SND_CT snd_ct;
 				memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
 				if(buffer.recv_buf.check_fin==1){
 					make_table=1;
-					/*
-					   if(make_table[my_num]==0){
-					   make_table[my_num]=1;
-					//fin_table[my_num]=1;
-					}
-					 */
-					//buf_count--;
-					//make_table=1;
-					/*
-					   if(make_table[my_num]==0){
-					   make_table[my_num]=1;
-					   pthread_create(&making_rr[my_num],NULL,RT_handler,NULL);
-					//create hanler : data;
-					}
-					 */
-					/*
-					   if(buf_count==0){
-					   exist_buf=0;
-					   memset(&buffer,0,sizeof(buffer));
-					   }*/
-					//pthread_mutex_unlock(&lock);
-					//continue;
 				}
 
 				int snd_sockfd = buffer.cli_sockfd;
@@ -634,13 +610,19 @@ static void * srv_handle(void * arg)
 
 						int len = sizeof(snd_ct);
 						send(neighbor_sock[a],(char*)&snd_ct, sizeof(SND_CT), 0);
+						get_buf[my_num]=1;
 
 						buf_count--;
+						for(int i=0;i<client_num;i++){
+							if(get_buf[i]==0){
+								
+								break;
+							}
+						}	
 						if(buf_count==0){
 							exist_buf=0;
 							memset(&buffer,0,sizeof(buffer));
 						}
-
 					}
 				}
 			}
@@ -745,6 +727,8 @@ static void * srv_handle(void * arg)
 		addr.sin_addr.s_addr = htons (INADDR_ANY);
 		addr.sin_port = htons (port_num);
 
+		int nSockOpt=1;
+		setsockopt(srv_sock,SOL_SOCKET,SO_REUSEADDR,&nSockOpt,sizeof(nSockOpt));
 		ret1 = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
 		printf("bind data socket\n");
 		if (ret1 == -1) {

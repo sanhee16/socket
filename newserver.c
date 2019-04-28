@@ -81,6 +81,10 @@ static void * real_server_handle(void * arg){
 	addr.sin_addr.s_addr = htons (INADDR_ANY);
 	addr.sin_port = htons (port_num);
 
+	 int nSockOpt=1;
+	     setsockopt(srv_sock,SOL_SOCKET,SO_REUSEADDR,&nSockOpt,sizeof(nSockOpt));
+
+
 	ret = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
 	if (ret == -1){
 		perror("BIND error!!");
