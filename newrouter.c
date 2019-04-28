@@ -719,11 +719,13 @@ static void * srv_handle(void * arg)
 
 
 	static void * data_srv_handle(void * arg){
-		while(1){
+		/*
+		   while(1){
 			if(rt_done==1)
 				break;
 		}
-		printf("ready to send \n");
+		*/
+		printf("ready to connect \n");
 		int srv_sock, cli_sock;
 		int port_num, ret1;
 		struct sockaddr_in addr;
@@ -946,11 +948,13 @@ static void * srv_handle(void * arg)
 		size_t getline_len;
 		int ret;
 		int done=0;
+		/*
 		while(1){
 			if(rt_done==1){
 				break;
 			}
 		}
+		*/
 		/*	while(1){
 			pthread_mutex_lock(&data_lock);
 			if(make_table==1){
