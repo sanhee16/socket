@@ -103,9 +103,6 @@ static void * RT_handler(void *arg){
 				printf("%d -> %d : %d",source, a, d[a]);
 				printf(" next %d \n",edge[a]);
 			}
-			
-			pthread_mutex_unlock(&lock);
-			break;
 		}
 	pthread_mutex_unlock(&lock);
 	}
