@@ -368,7 +368,7 @@ static void * srv_handle(void * arg)
 		int con_done[5] = {0, };
 		int all_done=0;
 		while(1){
-			if(all_done==0){
+		//	if(all_done==0){
 				for(int a=0;a<5;a++){
 					if(my_neighbor[a]==1 && con_done[a]==0){
 						char* send_ip;
@@ -406,7 +406,7 @@ static void * srv_handle(void * arg)
 					if(a==4)
 						all_done=1;
 				}
-			}
+		//	}
 		}
 		//while(1);
 	}
@@ -818,7 +818,7 @@ static void * srv_handle(void * arg)
 		printf("\n\n\n\nmake data client \n\n\n\n\n");
 		printf("neighbot %d %d %d %d ",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3]);
 		while(1){
-			if(all_done==0){
+			//if(all_done==0){
 				for(int a=0;a<ROU_NUM;a++){
 					if(my_neighbor[a]==1 && con_done[a]==0){
 						printf("neighbot %d %d %d %d",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3]);
@@ -861,7 +861,7 @@ static void * srv_handle(void * arg)
 					if(a==4)
 						all_done=1;
 				}
-			}
+			//}
 		}
 		//while(1);
 	}
