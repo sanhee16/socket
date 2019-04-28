@@ -514,7 +514,6 @@ static void * srv_handle(void * arg)
 		int ret;
 		int done=0;
 		SND_CT first;
-		print_CT();
 
 		arr_copy(first.CT,CT);
 		for(int a=0;a<ROU_NUM;a++){
@@ -551,7 +550,6 @@ static void * srv_handle(void * arg)
 					 */
 					//buf_count--;
 					printf("\n\n-------------client finish----------------------\n\n");
-					print_CT();
 					//make_table=1;
 					/*
 					   if(make_table[my_num]==0){
