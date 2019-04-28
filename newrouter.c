@@ -151,15 +151,16 @@ int main(int argc, char *argv[])
 	//pthread_create(&making_rr,NULL,RT_handler,NULL);
 
 
-	pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
+	//pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
 	if(my_num==0 || my_num==1 || my_num==2){
-		pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
+		//pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 	}
 	while(1){
 	}
 }
 
-static void * srv_handle(void * arg){
+static void * srv_handle(void * arg)
+{
 	int srv_sock, cli_sock;
 	int port_num, ret1;
 	struct sockaddr_in addr;
@@ -170,9 +171,11 @@ static void * srv_handle(void * arg){
 	//int cli_sockarr = (int *)malloc(sizeof(int)*ROU_NUM);
 	// socket creation
 	srv_sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (srv_sock == -1) {
+	if (srv_sock == -1)
+	{
 		perror("Server socket CREATE fail!!");
 		return 0;
+
 	}
 
 	// addr binding
@@ -183,7 +186,8 @@ static void * srv_handle(void * arg){
 
 	ret1 = bind (srv_sock, (struct sockaddr *)&addr, sizeof(addr));
 
-	if (ret1 == -1) {
+	if (ret1 == -1) 
+	{
 		perror("BIND error!!");
 		close(srv_sock);
 		return 0;
@@ -196,20 +200,25 @@ static void * srv_handle(void * arg){
 	printf("route bind\n");
 
 	int count_srv=0;
-	for(int a=0;a<ROU_NUM;a++){
+	for(int a=0;a<ROU_NUM;a++)
+	{
 		if(my_neighbor[a]==1)
+		{
 			count_srv++;
+		}
 	}
 	printf("count %d ", count_srv);
 	int* cli_sockarr = (int *)malloc(sizeof(int)*count_srv);
 
 	//int a=0;
-	for(int a=0; a<count_srv; a++){
+	for(int a=0; a<count_srv; a++)
+	{
 		//while(1){
 		ret1= listen(srv_sock, 0);
 		perror("listen");
 
-		if (ret1 == -1) {
+		if (ret1 == -1) 
+		{
 			perror("LISTEN stanby mode fail");
 			close(srv_sock);
 			return 0;
@@ -231,15 +240,19 @@ static void * srv_handle(void * arg){
 				NI_NUMERICHOST | NI_NUMERICSERV);
 
 
-		if(ret != 0){
+		if(ret != 0)
+		{
 			ret = -1;
 			pthread_exit(&ret);
 		}
 
 
-		if (cli_sockarr[a] == -1) {
+
+		if (cli_sockarr[a] == -1) 
+		{
 			//perror("cli_sock connect ACCEPT fail");
 			close(srv_sock);
+
 		}
 
 
@@ -252,29 +265,25 @@ static void * srv_handle(void * arg){
 		else if(*(hbuf+14)=='3'){
 			neighbor_sock_srv[2]=cli_sockarr[a];
 		}
-
 		else if(*(hbuf+14)=='4'){
 			neighbor_sock_srv[3]=cli_sockarr[a];
 		}
-
 		else if(*(hbuf+14)=='5'){
 			neighbor_sock_srv[4]=cli_sockarr[a];
 		}
-		//pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
-		//router_num++;
-		//a++;
-
-	}
+	}	
+	//pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
+	//router_num++;
+	//a++;
 
 	for(int a=0;a<count_srv;a++){
 		printf("make thread \n");
 		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
 		router_num++;
-
+	}
 	}
 
-	while(1);
-	}
+
 
 	static void * cli_handle(void *arg){
 
@@ -478,22 +487,22 @@ static void * srv_handle(void * arg){
 			if(done==1){
 				make_table=1;
 				/*
-				if(make_table[my_num]==0){
-					make_table[my_num]=1;
-				}
-				*/
+				   if(make_table[my_num]==0){
+				   make_table[my_num]=1;
+				   }
+				 */
 			}
 			if(exist_buf==1){
 				SND_CT snd_ct;
 				memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
 				if(buffer.recv_buf.check_fin==1){
 					make_table=1;
-				/*
-					if(make_table[my_num]==0){
-						make_table[my_num]=1;
-						//fin_table[my_num]=1;
+					/*
+					   if(make_table[my_num]==0){
+					   make_table[my_num]=1;
+					//fin_table[my_num]=1;
 					}
-					*/
+					 */
 					//buf_count--;
 					printf("\n\n-------------client finish----------------------\n\n");
 					print_CT();
@@ -584,58 +593,6 @@ static void * srv_handle(void * arg){
 		}
 		while(1);
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	void arr_copy(int(*arr)[ROU_NUM], int(*copy)[ROU_NUM]){
