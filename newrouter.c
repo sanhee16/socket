@@ -145,15 +145,17 @@ int main(int argc, char *argv[])
 	makeCT();
 	//print_CT();
 	pthread_create(&server, NULL, srv_handle, NULL);
-	pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
+	//pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
 	//pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 	pthread_create(&making_rr,NULL,RT_handler,NULL);
 
 
-	if(my_num==0 || my_num==1 || my_num==2){
+	if(make_table==1){
+		pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
+		if(my_num==0 || my_num==1 || my_num==2){
 		pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 	}
-
+	}
 	while(1){
 	}
 }
@@ -412,7 +414,7 @@ static void * srv_handle(void * arg){
 		//printf("rcv %d \n",cli_sockfd);
 		int done=0;
 		while(1){
-
+			fflush(NULL);
 			SND_CT get_ct;
 			memset(&(get_ct.CT),0,sizeof(get_ct.CT));
 			memset(&(get_ct.visit),0,sizeof(get_ct.visit));
@@ -472,6 +474,7 @@ static void * srv_handle(void * arg){
 		send(cli_sockfd, (char*)&first, sizeof(SND_CT), 0);
 		//perror("send");
 		while(1){
+			fflush(NULL);
 			print_CT();
 			//pthread_mutex_lock(&lock);
 			/*
@@ -823,6 +826,7 @@ static void * srv_handle(void * arg){
 		printf("hello");
 		int done=0;
 		while(1){
+			fflush(NULL);
 			MSG_T get_msg;
 			memset(&(get_msg),0,sizeof(get_msg));
 
@@ -882,7 +886,7 @@ static void * srv_handle(void * arg){
 		}
 		//print_CT();
 		while(1){
-
+			fflush(NULL);
 			//pthread_mutex_lock(&data_lock);
 			if(data_exist_buf==1){
 				MSG_T snd_msg;
@@ -907,7 +911,6 @@ static void * srv_handle(void * arg){
 						break;
 					default:
 						break;
-
 				}
 				printf("recv ip is %s \n",snd_msg.recv_ip);
 				printf("compare %c my num %d \n\n",compare,my_num);
