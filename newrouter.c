@@ -37,6 +37,8 @@ int client_num;
 int is_fin = 0;
 int close_cli;
 int fin_costtable[ROU_NUM]={0,};
+int get_buf[ROU_NUM];
+int data_get_buf[ROU_NUM];
 
 
 
@@ -83,7 +85,7 @@ typedef struct msg_data{
 }MSG_T;
 
 typedef struct buf_data{
-	MSG_T recv_buf;
+	MSG_T data_recv_buf;
 	int cli_sockfd;
 }DATA_BUF;
 
@@ -238,7 +240,7 @@ static void * srv_handle(void * arg){
 			//perror("cli_sock connect ACCEPT fail");
 			close(srv_sock);
 		}
-		
+
 
 		if(*(hbuf+14)=='1'){
 			neighbor_sock_srv[0]=cli_sockarr[a];
@@ -436,8 +438,6 @@ static void * srv_handle(void * arg){
 			}
 			if(get_ct.check_fin==1){
 				done=1;
-				//print_CT();
-				//continue;
 			}
 			get_ct.visit[my_num]=1;
 			memcpy(&(buffer.recv_buf),&get_ct,sizeof(SND_CT));
@@ -473,8 +473,7 @@ static void * srv_handle(void * arg){
 		//perror("send");
 		while(1){
 			//print_CT();
-
-			pthread_mutex_lock(&lock);
+			//pthread_mutex_lock(&lock);
 			if(done==1){
 				make_table=1;
 				printf("done \n");
@@ -482,20 +481,23 @@ static void * srv_handle(void * arg){
 			}
 
 			if(exist_buf==1){
+				pthread_mutex_lock(&lock);
+
 				SND_CT snd_ct;
-				memcpy(&snd_ct,&(buffer.recv_buf),sizeof(SND_CT));
+				memcpy(&snd_ct, &(buffer.recv_buf), sizeof(SND_CT));
 				int snd_sockfd = buffer.cli_sockfd;
-				for(int a=0;a<ROU_NUM;a++){
+				
+				for(int a=0;a<ROU_NUM;a++){ //CT update
 					for(int b=0;b<ROU_NUM;b++){
 						if(buffer.recv_buf.CT[a][b]==INFINITE && CT[a][b]==INFINITE){
-							CT[a][b]=CT[a][b];
+							//CT[a][b]=CT[a][b];
 						}
 						else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]==INFINITE){
 							CT[a][b]=buffer.recv_buf.CT[a][b];
 						}
 						else if(buffer.recv_buf.CT[a][b]== INFINITE && CT[a][b]!=INFINITE){
-							buffer.recv_buf.CT[a][b]=CT[a][b];
-							CT[a][b]=CT[a][b];
+							//buffer.recv_buf.CT[a][b]=CT[a][b];
+							//CT[a][b]=CT[a][b];
 						}
 						else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]!=INFINITE){
 							CT[a][b]=buffer.recv_buf.CT[a][b];
@@ -503,47 +505,49 @@ static void * srv_handle(void * arg){
 					}
 				}
 
-				for(int a=0;a<ROU_NUM;a++){
-					if(my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){
-						arr_copy(snd_ct.CT,CT);
-						snd_ct.visit[my_num]=1;
+				arr_copy(snd_ct.CT, CT);
+				snd_ct.visit[my_num]=1;
+				for(int x=0;x<ROU_NUM;x++){
+					if(snd_ct.visit[x]==1){
+
+					}
+					else{
+						snd_ct.finish=0;
+						break;
+					}
+					snd_ct.finish=1;
+				}
+				if(snd_ct.finish==1){
+					snd_ct.check_finish[my_num]=1;
+				}
+				if(loop_onetime==0){
+					if(buffer.recv_buf.finish==1){
 						for(int x=0;x<ROU_NUM;x++){
-							if(snd_ct.visit[x]==1){
+							if(snd_ct.check_finish[x]==1){
 
 							}
-							else{
-								snd_ct.finish=0;
+							else if(snd_ct.check_finish[x]!=1){
+								snd_ct.check_fin=0;
+								done=0;
 								break;
 							}
-							snd_ct.finish=1;
+							snd_ct.check_fin=1;
+							done=1;
 						}
-						snd_ct.check_finish[my_num]=1;
-						if(loop_onetime==0){
-							if(buffer.recv_buf.finish==1){
-								for(int x=0;x<ROU_NUM;x++){
-									if(snd_ct.check_finish[x]==1){
+					}
+				}
 
-									}
-									else if(snd_ct.check_finish[x]!=1){
-										snd_ct.check_fin=0;
-										done=0;
-										break;
-									}
-									snd_ct.check_fin=1;
-									done=1;
-								}
-							}
-						}
-
-						if(done==1){
-							loop_onetime=1;
-							if(make_table==0){
-								make_table=1;
-							}
-						}
+				if(done==1){
+					loop_onetime=1;
+					if(make_table==0){
+						make_table=1;
+					}
+				}
+				for(int a=0;a<ROU_NUM;a++){
+					if(get_buf[a]==0 &&my_neighbor[a]==1 && (cli_sockfd == neighbor_sock[a])){
 						int len = sizeof(snd_ct);
 						send(neighbor_sock[a],(char*)&snd_ct, sizeof(SND_CT), 0);
-
+						get_buf[a]=1;
 						buf_count--;
 						if(buf_count==0){
 							exist_buf=0;
@@ -702,7 +706,7 @@ static void * srv_handle(void * arg){
 			//	a++;
 		}
 		for(int a=0;a<count_srv;a++){
-			printf("make thread \n");
+			printf("make data thread \n");
 			pthread_create(&data_rcv_thread[data_router_num],NULL,data_rcvhandle,&cli_sockarr[a]);
 			data_router_num++;
 
@@ -786,7 +790,7 @@ static void * srv_handle(void * arg){
 		inet_pton(AF_INET, send_ip, &addr.sin_addr);
 		ret = connect(fd_sock, (struct sockaddr *)&addr, sizeof(addr));
 		if(ret == -1){
-		//	perror("connect");
+			//	perror("connect");
 			close(fd_sock);
 			return -1;
 		}
@@ -822,7 +826,7 @@ static void * srv_handle(void * arg){
 			pthread_mutex_lock(&data_lock);
 
 			printf("data rcv : %s ",get_msg.msg);
-			memcpy(&(data_buffer.recv_buf),&get_msg,sizeof(MSG_T));
+			memcpy(&(data_buffer.data_recv_buf),&get_msg,sizeof(MSG_T));
 			data_buffer.cli_sockfd = cli_sockfd;
 
 			data_exist_buf = 1;
@@ -864,7 +868,7 @@ static void * srv_handle(void * arg){
 			//pthread_mutex_lock(&data_lock);
 			if(data_exist_buf==1){
 				MSG_T snd_msg;
-				memcpy(&snd_msg,&(data_buffer.recv_buf),sizeof(MSG_T));
+				memcpy(&snd_msg,&(data_buffer.data_recv_buf),sizeof(MSG_T));
 
 				int compare=-1;
 				switch(*(snd_msg.recv_ip+14)){
