@@ -507,7 +507,6 @@ static void * srv_handle(void * arg)
 					printf("\n\n-------------client finish----------------------\n\n");
 					print_CT();
 					//make_table=1;
-					while(1){}
 					/*
 					   if(make_table[my_num]==0){
 					   make_table[my_num]=1;
