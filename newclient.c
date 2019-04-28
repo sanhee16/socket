@@ -210,7 +210,7 @@ static void * real_cli_sndhandle(void *arg){
 		snd_msg.snd_port=4712;
 		snd_msg.recv_port=4712;
 
-		send(cli_sockfd, &snd_msg, sizeof(MSG_T), 0);
+		send(cli_sockfd, snd_msg, sizeof(MSG_T), 0);
 
 		//send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 		fflush(NULL);
