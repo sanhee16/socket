@@ -235,9 +235,10 @@ static void * srv_handle(void * arg){
 
 
 		if (cli_sockarr[a] == -1) {
-			perror("cli_sock connect ACCEPT fail");
+			//perror("cli_sock connect ACCEPT fail");
 			close(srv_sock);
 		}
+		
 
 		if(*(hbuf+14)=='1'){
 			neighbor_sock_srv[0]=cli_sockarr[a];
@@ -341,7 +342,7 @@ static void * srv_handle(void * arg){
 		inet_pton(AF_INET, send_ip, &addr.sin_addr);
 		ret = connect(fd_sock, (struct sockaddr *)&addr, sizeof(addr));
 		if(ret == -1){
-			perror("connect");
+			//perror("connect");
 			close(fd_sock);
 			return -1;
 		}
@@ -476,6 +477,7 @@ static void * srv_handle(void * arg){
 			pthread_mutex_lock(&lock);
 			if(done==1){
 				make_table=1;
+				printf("done \n");
 				print_CT();
 			}
 
@@ -606,7 +608,7 @@ static void * srv_handle(void * arg){
 		//connect
 		ret = connect(fd_sock, (struct sockaddr *)&addr, sizeof(addr));
 		if(ret == -1){
-			perror("connect");
+			//perror("connect");
 			close(fd_sock);
 		}
 		printf("make client connect");
@@ -784,7 +786,7 @@ static void * srv_handle(void * arg){
 		inet_pton(AF_INET, send_ip, &addr.sin_addr);
 		ret = connect(fd_sock, (struct sockaddr *)&addr, sizeof(addr));
 		if(ret == -1){
-			perror("connect");
+		//	perror("connect");
 			close(fd_sock);
 			return -1;
 		}
@@ -856,7 +858,7 @@ static void * srv_handle(void * arg){
 			printf("RT \n");
 			printf("%d %d %d ",rt.dest[a],rt.next[a],rt.cost[a]);
 		}
-		print_CT();
+		//print_CT();
 		while(1){
 
 			//pthread_mutex_lock(&data_lock);
