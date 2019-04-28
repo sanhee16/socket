@@ -1034,9 +1034,9 @@ static void * srv_handle(void * arg)
 						send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 						printf("send to server !\n");
 						data_exist_buf_arr[ch]=0;
-						memset(&buffer_arr[ch],0,sizeof(DATA_BUF));
+						memset(&buffer_arr[ch],0,sizeof(MSG_T));
 						//data_exist_buf=0;
-						//memset(&data_buffer,0,sizeof(DATA_BUF));
+						memset(&data_buffer,0,sizeof(DATA_BUF));
 						fflush(NULL);
 						pthread_mutex_unlock(&data_lock);
 						continue;
