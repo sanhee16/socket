@@ -891,10 +891,10 @@ static void * srv_handle(void * arg)
 		int done=0;
 		while(1){
 			fflush(NULL);
-			MSG_T get_msg;
-			memset(&get_msg,0,sizeof(MSG_T));
+			//MSG_T get_msg;
+			//memset(&get_msg,0,sizeof(MSG_T));
 
-			printf("get init %s \n",get_msg.msg);
+			//printf("get init %s \n",get_msg->msg);
 			int len;
 			int rcv_sock;
 			/*
@@ -907,28 +907,32 @@ static void * srv_handle(void * arg)
 			   }
 			}
 			*/
-			len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
-			
+			char getBuf[400];
+			len = recv(cli_sockfd, getBuf, 400, 0);
 			if(len<0)
-				continue;
-
+				 continue;
+			
+			//len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
+		
 			pthread_mutex_lock(&data_lock);
-
+			getBuf[400]='\0';
+			MSG_T* get_msg;
+			get_msg = (MSG_T*)getBuf;
+					
+			printf("data rcv : %s ",get_msg->msg);
+			printf("data rcv : %s ",get_msg->snd_ip);
+			printf("data rcv : %s ",get_msg->recv_ip);
 			
-			printf("data rcv : %s ",get_msg.msg);
-			printf("data rcv : %s ",get_msg.snd_ip);
-			printf("data rcv : %s ",get_msg.recv_ip);
-			
-			strncpy(data_buffer.data_recv_buf.msg, get_msg.msg,362);
-			strncpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip,7);
-			strncpy(data_buffer.data_recv_buf.recv_ip, get_msg.recv_ip,7);
-			data_buffer.data_recv_buf.snd_port = get_msg.snd_port;
-			data_buffer.data_recv_buf.recv_port = get_msg.recv_port;
+			//strncpy(data_buffer.data_recv_buf.msg, get_msg.msg,362);
+			//strncpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip,7);
+			//strncpy(data_buffer.data_recv_buf.recv_ip, get_msg.recv_ip,7);
+			data_buffer.data_recv_buf.snd_port = get_msg->snd_port;
+			data_buffer.data_recv_buf.recv_port = get_msg->recv_port;
 
 			//memcpy(&(data_buffer.data_recv_buf),&get_msg,sizeof(MSG_T));
 			data_buffer.cli_sockfd = cli_sockfd;
 
-			printf("recv ip is %s \n",get_msg.snd_ip);
+			printf("recv ip is %s \n",get_msg->snd_ip);
 			printf("recv ip is %s \n",data_buffer.data_recv_buf.snd_ip);
 
 			data_exist_buf = 1;
