@@ -953,7 +953,7 @@ static void * srv_handle(void * arg)
 				if(data_exist_buf_arr[ch]==0){
 					data_exist_buf_arr[ch]=1;
 					memcpy(&buffer_arr[ch],&data_buffer.data_recv_buf,sizeof(MSG_T));
-					memset(&data_buffer,0,sizeof(DATA_BUF));
+					//memset(&data_buffer,0,sizeof(DATA_BUF));
 					break;
 				}
 				if(ch==MAX_BUF-1){
