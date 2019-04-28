@@ -1024,8 +1024,7 @@ static void * data_sndhandle(void *arg){
 
 		int ch=0;
 		while(1){
-			//int ch=0;
-
+			pthread_mutex_lock(&data_lock);
 			if(data_exist_buf_arr[ch]==1){
 			//pthread_mutex_lock(&data_lock);	
 				//if(data_exist_buf==1){
@@ -1064,7 +1063,11 @@ static void * data_sndhandle(void *arg){
 						//data_exist_buf=0;
 						memset(&data_buffer,0,sizeof(DATA_BUF));
 						fflush(NULL);
-						
+						ch++;
+						                if(ch==MAX_BUF){
+											                    ch=0;
+																                }
+
 						pthread_mutex_unlock(&data_lock);
 						continue;
 					}
@@ -1116,7 +1119,7 @@ static void * data_sndhandle(void *arg){
 				fflush(NULL);
 
 				if(my_neighbor[snd_sockfd]==1 && data_neighbor_sock[snd_sockfd]==cli_sockfd){
-					pthread_mutex_lock(&data_lock);
+					//pthread_mutex_lock(&data_lock);
 					//	printf("snd_sockfd is %d \n",snd_sockfd);
 					//	printf("neig %d | cli %d \n",data_neighbor_sock[snd_sockfd],cli_sockfd);
 					fflush(NULL);
@@ -1135,14 +1138,14 @@ static void * data_sndhandle(void *arg){
 				fflush(NULL);
 				fflush(stdin);
 				
-				pthread_mutex_unlock(&data_lock);
+				//pthread_mutex_unlock(&data_lock);
 			}//not if
-			else{//no exist
+			//no exist
 				ch++;
 				if(ch==MAX_BUF){
 					ch=0;
 				}
-			}
+			pthread_mutex_unlock(&data_lock);
 
 		}
 
