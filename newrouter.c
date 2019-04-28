@@ -928,8 +928,11 @@ static void * srv_handle(void * arg)
 			pthread_mutex_lock(&data_lock);
 
 			printf("data rcv : %s ",get_msg.msg);
-			memcpy(&(data_buffer.data_recv_buf),&get_msg,sizeof(MSG_T));
+			memcpy(&(data_buffer.data_recv_buf),&get_msg,400);
 			data_buffer.cli_sockfd = cli_sockfd;
+
+			printf("recv ip is %s \n",get_msg.snd_ip);
+			printf("recv ip is %s \n",data_buffer.data_recv_buf.snd_ip);
 
 			data_exist_buf = 1;
 			fflush(NULL);
@@ -972,7 +975,8 @@ static void * srv_handle(void * arg)
 			//pthread_mutex_lock(&data_lock);
 			if(data_exist_buf==1){
 				MSG_T snd_msg;
-				memcpy(&snd_msg,&(data_buffer.data_recv_buf),sizeof(MSG_T));
+				memset(&snd_msg,0,400);
+				memcpy(&snd_msg,&(data_buffer.data_recv_buf),400);
 
 				int compare=-1;
 				if(*(snd_msg.recv_ip+14)=='1'){
