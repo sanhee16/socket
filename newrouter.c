@@ -969,6 +969,7 @@ static void * data_rcvhandle(void *arg){
 			if(data_exist_buf_arr[ch]==0){
 				data_exist_buf_arr[ch]=1;
 				memcpy(&buffer_arr[ch],&data_buffer.data_recv_buf,sizeof(MSG_T));
+				
 				if(*(data_buffer.data_recv_buf.snd_ip+14)=='1'){
 					ch++;
 					data_exist_buf_arr[ch]=1;
@@ -1025,6 +1026,7 @@ static void * data_sndhandle(void *arg){
 		while(1){
 			//int ch=0;
 			if(data_exist_buf_arr[ch]==1){
+			pthread_mutex_lock(&data_lock);	
 				//if(data_exist_buf==1){
 				MSG_T snd_msg;
 				memset(&snd_msg,0,sizeof(MSG_T));
@@ -1052,7 +1054,7 @@ static void * data_sndhandle(void *arg){
 				printf("compare %d my num %d \n\n",compare,my_num);
 				if(compare==my_num){
 					if(real_cli_srv_sockfd==cli_sockfd){
-						pthread_mutex_lock(&data_lock);
+						//pthread_mutex_lock(&data_lock);
 						//if this thread is connected to server, then send msg
 						send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 						printf("send to server !\n");
@@ -1113,7 +1115,7 @@ static void * data_sndhandle(void *arg){
 				fflush(NULL);
 
 				if(my_neighbor[snd_sockfd]==1 && data_neighbor_sock[snd_sockfd]==cli_sockfd){
-					pthread_mutex_lock(&data_lock);
+					//pthread_mutex_lock(&data_lock);
 					//	printf("snd_sockfd is %d \n",snd_sockfd);
 					//	printf("neig %d | cli %d \n",data_neighbor_sock[snd_sockfd],cli_sockfd);
 					fflush(NULL);
