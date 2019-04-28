@@ -497,14 +497,14 @@ static void * srv_handle(void * arg){
 					for(int a=0;a<ROU_NUM;a++){ //CT update
 						for(int b=0;b<ROU_NUM;b++){
 							if(buffer.recv_buf.CT[a][b]==INFINITE && CT[a][b]==INFINITE){
-								//CT[a][b]=CT[a][b];
+								CT[a][b]=CT[a][b];
 							}
 							else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]==INFINITE){
 								CT[a][b]=buffer.recv_buf.CT[a][b];
 							}
 							else if(buffer.recv_buf.CT[a][b]== INFINITE && CT[a][b]!=INFINITE){
-								//buffer.recv_buf.CT[a][b]=CT[a][b];
-								//CT[a][b]=CT[a][b];
+								buffer.recv_buf.CT[a][b]=CT[a][b];
+								CT[a][b]=CT[a][b];
 							}
 							else if(buffer.recv_buf.CT[a][b]!=INFINITE && CT[a][b]!=INFINITE){
 								CT[a][b]=buffer.recv_buf.CT[a][b];
@@ -514,6 +514,7 @@ static void * srv_handle(void * arg){
 
 					arr_copy(snd_ct.CT, CT);
 					for(int x=0;x<ROU_NUM;x++){
+						print_CT();
 						if(CT[x][x]==0){
 							done=1;
 						}
