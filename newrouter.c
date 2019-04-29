@@ -175,6 +175,8 @@ void arr_copy(int(*arr)[ROU_NUM], int(*copy)[ROU_NUM]);
 int connect_rou(char* );
 int main(int argc, char *argv[])
 {
+	
+	pthread_create(&making_rr[my_num],NULL,RT_handler,&done);
 	//client_ip[0]="220.149.244.211";
 	//client_ip[1]="220.149.244.212";
 	makeCT();
@@ -271,58 +273,6 @@ static void * srv_handle(void * arg)
 	}
 
 	}
-
-
-	/*
-	   int ret = -1;
-	   char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
-	// get peer addr 
-	struct sockaddr peer_addr;
-	socklen_t peer_addr_len;
-	memset(&peer_addr, 0, sizeof(peer_addr));
-	peer_addr_len = sizeof(peer_addr);
-	ret = getpeername(cli_sockarr[a], &peer_addr, &peer_addr_len);
-	ret = getnameinfo(&peer_addr, peer_addr_len,
-	hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
-	NI_NUMERICHOST | NI_NUMERICSERV);
-
-
-	if(ret != 0)
-	{
-	ret = -1;
-	pthread_exit(&ret);
-	}
-
-	if(*(hbuf+14)=='1'){
-	neighbor_sock_srv[0]=cli_sockarr[a];
-	}
-	else if(*(hbuf+14)=='2'){
-	neighbor_sock_srv[1]=cli_sockarr[a];
-	}
-	else if(*(hbuf+14)=='3'){
-	neighbor_sock_srv[2]=cli_sockarr[a];
-	}
-	else if(*(hbuf+14)=='4'){
-	neighbor_sock_srv[3]=cli_sockarr[a];
-	}
-	else if(*(hbuf+14)=='5'){
-	neighbor_sock_srv[4]=cli_sockarr[a];
-	}
-	 */
-	//	}
-
-	//pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
-	//router_num++;
-	//a++;
-/*
-   for(int a=0;a<count_srv;a++){
-   printf("make thread \n");
-   pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sockarr[a]);
-   router_num++;
-   }
- */
-//	}
-
 static void * srv_listen_handler(void * arg){
 
 	int cli_sock = *(int *)arg;
@@ -584,7 +534,6 @@ static void * sndhandle(void *arg){
 	first.visit[my_num]=1;
 	first.finish=0;
 	send(cli_sockfd, (char*)&first, sizeof(SND_CT), 0);
-	pthread_create(&making_rr[my_num],NULL,RT_handler,&done);
 	
 	while(1){
 
