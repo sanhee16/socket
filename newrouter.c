@@ -1007,23 +1007,6 @@ static void * data_sndhandle(void *arg){
 	size_t getline_len;
 	int ret;
 	int done=0;
-	/*
-	   while(1){
-	   if(rt_done==1){
-	   break;
-	   }
-	   }
-	 */
-	/*	while(1){
-		pthread_mutex_lock(&data_lock);
-		if(make_table==1){
-		pthread_mutex_unlock(&data_lock);
-		pthread_create(&making_rr,NULL,RT_handler,NULL);
-		break;
-		}
-		pthread_mutex_unlock(&data_lock);
-		}
-	 */
 	for(int a=0;a<ROU_NUM;a++){
 		printf("RT \n");
 		printf("%d %d %d ",rt.dest[a],rt.next[a],rt.cost[a]);
@@ -1037,6 +1020,7 @@ static void * data_sndhandle(void *arg){
 		//int ch=0;
 		//pthread_mutex_lock(&data_lock);
 		pthread_mutex_lock(&data_lock);
+		printf("snd in the mutex !\n ");
 		ptr_cons=ch;
 		ch++;
 		if(ch==MAX_BUF){
@@ -1045,6 +1029,8 @@ static void * data_sndhandle(void *arg){
 
 		pthread_mutex_lock(&data_lock_arr[ch]);
 		pthread_mutex_unlock(&data_lock);
+
+		printf("snd in the mutex ch!\n ");
 
 		if(data_exist_buf_arr[ch]==0){
 			pthread_mutex_unlock(&data_lock_arr[ch]);
@@ -1079,7 +1065,7 @@ static void * data_sndhandle(void *arg){
 			printf("compare %d my num %d \n\n",compare,my_num);
 			if(compare==my_num){
 				if(real_cli_srv_sockfd==cli_sockfd){
-					pthread_mutex_lock(&data_lock);
+					//pthread_mutex_lock(&data_lock);
 					//if this thread is connected to server, then send msg
 					send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 					printf("send to server !\n");
@@ -1097,12 +1083,12 @@ static void * data_sndhandle(void *arg){
 					//pthread_mutex_unlock(&data_lock);
 					continue;
 				}
-					   else{
-						   pthread_mutex_unlock(&data_lock_arr[ch]);
-						   //pthread_mutex_unlock(&data_lock);
-						   continue;
-					   }
-				}
+				else{
+					pthread_mutex_unlock(&data_lock_arr[ch]);
+					//pthread_mutex_unlock(&data_lock);
+					continue;
+			   }
+			}
 
 
 				/*
@@ -1147,7 +1133,7 @@ static void * data_sndhandle(void *arg){
 				fflush(NULL);
 
 				if(my_neighbor[snd_sockfd]==1 && data_neighbor_sock[snd_sockfd]==cli_sockfd){
-					pthread_mutex_lock(&data_lock);
+					//pthread_mutex_lock(&data_lock);
 					fflush(NULL);
 					send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
 					perror("send");
@@ -1155,7 +1141,9 @@ static void * data_sndhandle(void *arg){
 					printf("send ip is %s \n",snd_msg.snd_ip);
 					printf("send to router! \n");
 					data_exist_buf_arr[ch]=0;
-					memset(&buffer_arr[ch],0,sizeof(DATA_BUF));
+					memset(&buffer_arr[ch],0,sizeof(MSG_T));
+					memset(&data_buffer,0,sizeof(DATA_BUF));
+
 					pthread_mutex_unlock(&data_lock_arr[ch]);
 					//pthread_mutex_unlock(&data_lock);
 					/* 
