@@ -1021,6 +1021,7 @@ static void * data_sndhandle(void *arg){
 					//pthread_mutex_lock(&data_lock);
 					//if this thread is connected to server, then send msg
 					send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+					perror("send");
 					printf("send to server !\n");
 					data_exist_buf_arr[ch]=0;
 					memset(&buffer_arr[ch],0,sizeof(MSG_T));
