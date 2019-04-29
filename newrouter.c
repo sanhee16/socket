@@ -561,6 +561,7 @@ static void * sndhandle(void *arg){
 	//RT_handler(&done);
 	pthread_create(&making_rr[my_num],NULL,RT_handler,&done);
 	while(1){
+		print_CT();
 		pthread_mutex_lock(&lock);
 
 		if(done==1){
@@ -1119,7 +1120,7 @@ static void * data_sndhandle(void *arg){
 					break;
 				}
 				pthread_mutex_lock(&lock);
-				print_CT();
+			//	print_CT();
 				int d[ROU_NUM];
 				int set_s[ROU_NUM];
 				int set_c[ROU_NUM];
