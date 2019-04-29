@@ -556,6 +556,7 @@ static void * sndhandle(void *arg){
 			continue;
 		}
 		if(ct_buf[ct_snd].exist_buf==1){
+			print_CT();
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
 					if(ct_buf[ct_snd].ct_buffer[a][b]!=INFINITE && CT[a][b]== INFINITE){
@@ -1050,7 +1051,6 @@ static void * data_sndhandle(void *arg){
 					break;
 				}
 				pthread_mutex_lock(&lock);
-				print_CT();
 				int d[ROU_NUM];
 				int set_s[ROU_NUM];
 				int set_c[ROU_NUM];
