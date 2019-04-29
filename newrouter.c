@@ -16,12 +16,8 @@
 #define CLI_NUM 2
 #define MAX_BUF 100
 
-
 pthread_mutex_t lock;
-
-
-
-
+pthread_mutex_t data_lock_arr[MAX_BUF];
 
 int edge[ROU_NUM];
 int fin_table[ROU_NUM];
@@ -270,7 +266,7 @@ static void * srv_handle(void * arg)
 		thds++;
 	}
 
-}
+	}
 
 
 	/*
@@ -905,6 +901,8 @@ static void * data_rcvhandle(void *arg){
 	//printf("rcv %d \n",cli_sockfd);
 	printf("hello");
 
+	int ch_read=0;
+	int ptr_read=0;
 	int done=0;
 	while(1){
 		fflush(NULL);
@@ -942,8 +940,17 @@ static void * data_rcvhandle(void *arg){
 		}
 		//len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 
-		pthread_mutex_lock(&data_lock);
-
+		//pthread_mutex_lock(&data_lock);
+		pthread_mutex_lock(&data_lock_arr[ch_read]);
+		ptr_read = ch_read;
+		ch_read++;
+		if(ch_read==MAX_BUF){
+			ch_read=0;
+		}
+		if(data_exist_buf_arr[ch_read]==1){
+			pthread_mutex_unlock(&data_lock_arr[ch_read]);
+			continue;
+		}
 		//getBuf[400]='\0';
 		//MSG_T* get_msg;
 		//get_msg = (MSG_T*)getBuf;
@@ -965,33 +972,38 @@ static void * data_rcvhandle(void *arg){
 		printf("recv ip(snd) is %s \n",get_msg.snd_ip);
 		printf("recv ip(snd/cpy) is %s \n",data_buffer.data_recv_buf.snd_ip);
 
-		for(int ch=0;ch<MAX_BUF;ch++){
-			if(data_exist_buf_arr[ch]==0){
-				data_exist_buf_arr[ch]=1;
-				memcpy(&buffer_arr[ch],&data_buffer.data_recv_buf,sizeof(MSG_T));
-				
-				if(*(data_buffer.data_recv_buf.snd_ip+14)=='1'){
-					ch++;
-					data_exist_buf_arr[ch]=1;
-					memcpy(&buffer_arr[ch],&data_buffer.data_recv_buf,sizeof(MSG_T));
-				}
-				//memset(&data_buffer,0,sizeof(DATA_BUF));
-				break;
-			}
-			if(ch==MAX_BUF-1){
-				break;
-			}
+		//	for(int ch=0;ch<MAX_BUF;ch++){
+		if(data_exist_buf_arr[ch_read]==0){
+			data_exist_buf_arr[ch_read]=1;
+			memcpy(&buffer_arr[ch_read],&data_buffer.data_recv_buf,sizeof(MSG_T));
+			/*
+			   if(*(data_buffer.data_recv_buf.snd_ip+14)=='1'){
+			   ch++;
+			   data_exist_buf_arr[ch_read]=1;
+			   memcpy(&buffer_arr[ch_read],&data_buffer.data_recv_buf,sizeof(MSG_T));
+			   }
+			 */
+			//memset(&data_buffer,0,sizeof(DATA_BUF));
+			//break;
 		}
+		/*
+		   if(ch==MAX_BUF-1){
+		   break;
+		   }
+		 */
+		//	}
 		//data_exist_buf = 1;
 		fflush(NULL);
-		pthread_mutex_unlock(&data_lock);
+		pthread_mutex_unlock(&data_lock_arr[ch_read]);
 	}
 	while(1);
 }
 
+int ch=0;
+
 static void * data_sndhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
-
+	int ptr_cons=0;
 	size_t getline_len;
 	int ret;
 	int done=0;
@@ -1022,60 +1034,77 @@ static void * data_sndhandle(void *arg){
 		//pthread_mutex_lock(&data_lock);
 		//for(int ch=0;ch<MAX_BUF;ch++){
 
-		int ch=0;
-		while(1){
-			//pthread_mutex_lock(&data_lock);
-			if(data_exist_buf_arr[ch]==1){
+		//int ch=0;
+		//pthread_mutex_lock(&data_lock);
+		pthread_mutex_lock(&data_lock);
+		ptr_cons=ch;
+		ch++;
+		if(ch==MAX_BUF){
+			ch=0;
+		}
+
+		pthread_mutex_lock(&data_lock_arr[ch]);
+		pthread_mutex_unlock(&data_lock);
+
+		if(data_exist_buf_arr[ch]==0){
+			pthread_mutex_unlock(&data_lock_arr[ch]);
+			continue;
+		}
+		if(data_exist_buf_arr[ch]==1){
 			//pthread_mutex_lock(&data_lock);	
-				//if(data_exist_buf==1){
-				MSG_T snd_msg;
-				memset(&snd_msg,0,sizeof(MSG_T));
-				memcpy(&snd_msg,&buffer_arr[ch],sizeof(MSG_T));
-				//memcpy(&snd_msg,&(data_buffer.data_recv_buf),sizeof(MSG_T));
+			//if(data_exist_buf==1){
+			MSG_T snd_msg;
+			memset(&snd_msg,0,sizeof(MSG_T));
+			memcpy(&snd_msg,&buffer_arr[ch],sizeof(MSG_T));
+			//memcpy(&snd_msg,&(data_buffer.data_recv_buf),sizeof(MSG_T));
 
-				int compare=-1;
-				if(*(snd_msg.recv_ip+14)=='1'){
-					compare=0;
+			int compare=-1;
+			if(*(snd_msg.recv_ip+14)=='1'){
+				compare=0;
+			}
+			else if(*(snd_msg.recv_ip+14)=='2'){
+				compare=1;
+			}
+			else if(*(snd_msg.recv_ip+14)=='3'){
+				compare=2;
+			}
+			else if(*(snd_msg.recv_ip+14)=='4'){
+				compare=3;
+			}
+			else if(*(snd_msg.recv_ip+14)=='5'){
+				compare=4;
+			}
+
+			printf("recv ip is %s \n",snd_msg.snd_ip);
+			printf("compare %d my num %d \n\n",compare,my_num);
+			if(compare==my_num){
+				if(real_cli_srv_sockfd==cli_sockfd){
+					pthread_mutex_lock(&data_lock);
+					//if this thread is connected to server, then send msg
+					send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+					printf("send to server !\n");
+					data_exist_buf_arr[ch]=0;
+					memset(&buffer_arr[ch],0,sizeof(MSG_T));
+					//data_exist_buf=0;
+					memset(&data_buffer,0,sizeof(DATA_BUF));
+					fflush(NULL);
+					/*
+					   ch++;
+					   if(ch==MAX_BUF){
+					   ch=0;
+					 */										                
+					pthread_mutex_unlock(&data_lock_arr[ch]);
+					//pthread_mutex_unlock(&data_lock);
+					continue;
 				}
-				else if(*(snd_msg.recv_ip+14)=='2'){
-					compare=1;
-				}
-				else if(*(snd_msg.recv_ip+14)=='3'){
-					compare=2;
-				}
-				else if(*(snd_msg.recv_ip+14)=='4'){
-					compare=3;
-				}
-				else if(*(snd_msg.recv_ip+14)=='5'){
-					compare=4;
+					   else{
+						   pthread_mutex_unlock(&data_lock_arr[ch]);
+						   //pthread_mutex_unlock(&data_lock);
+						   continue;
+					   }
 				}
 
-				printf("recv ip is %s \n",snd_msg.snd_ip);
-				printf("compare %d my num %d \n\n",compare,my_num);
-				if(compare==my_num){
-					if(real_cli_srv_sockfd==cli_sockfd){
-						pthread_mutex_lock(&data_lock);
-						//if this thread is connected to server, then send msg
-						send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
-						printf("send to server !\n");
-						data_exist_buf_arr[ch]=0;
-						memset(&buffer_arr[ch],0,sizeof(MSG_T));
-						//data_exist_buf=0;
-						memset(&data_buffer,0,sizeof(DATA_BUF));
-						fflush(NULL);
-						ch++;
-						                if(ch==MAX_BUF){
-											                    ch=0;
-																                }
 
-						pthread_mutex_unlock(&data_lock);
-						continue;
-					}
-					else{
-						pthread_mutex_unlock(&data_lock);
-						continue;
-					}
-				}
 				/*
 				 */
 
@@ -1127,38 +1156,30 @@ static void * data_sndhandle(void *arg){
 					printf("send to router! \n");
 					data_exist_buf_arr[ch]=0;
 					memset(&buffer_arr[ch],0,sizeof(DATA_BUF));
-					pthread_mutex_unlock(&data_lock);
-					 ch++;
-					 if(ch==MAX_BUF){
-						ch=0;
-					 }
+					pthread_mutex_unlock(&data_lock_arr[ch]);
+					//pthread_mutex_unlock(&data_lock);
+					/* 
+					   ch++;
+					   if(ch==MAX_BUF){
+					   ch=0;
+					   }
+					 */
 					fflush(NULL);
 					fflush(stdin);
-					
+
 				}
 				fflush(NULL);
 				fflush(stdin);
-				
+
 				//pthread_mutex_unlock(&data_lock);
-			}//not if
-			//no exist
-				else{
-			//pthread_mutex_unlock(&data_lock);
 
-			ch++;
-				if(ch==MAX_BUF){
-					ch=0;
-				}
-				}
-			//pthread_mutex_unlock(&data_lock);
-
+			}//end while loop
+			//`printf("\n\n---------done-----------\n\n");
+			//print_CT();
+			while(1);
 		}
-
-		}
-		//`printf("\n\n---------done-----------\n\n");
-		//print_CT();
 		while(1);
-	}
+		}
 
 
 
@@ -1166,126 +1187,126 @@ static void * data_sndhandle(void *arg){
 
 
 
-	static void * RT_handler(void *arg){
-		//makeCT();
-		//print_CT();
-		//int done = *(int *)arg;
+		static void * RT_handler(void *arg){
+			//makeCT();
+			//print_CT();
+			//int done = *(int *)arg;
 
-		while(1){
-			printf("--------------------------RT%d ---------------------------",rt_done);
-			if(rt_done==1){
-				break;
-			}
-			pthread_mutex_lock(&lock);
-			print_CT();
-			int d[ROU_NUM];
-			int set_s[ROU_NUM];
-			int set_c[ROU_NUM];
-
-			for(int a=0;a<ROU_NUM;a++){
-				d[a]=INFINITE;
-				edge[a]=0;
-				set_c[a]=1;
-				set_s[a]=0;
-				rt.dest[a]=a;
-				rt.next[a]=-1;
-				rt.cost[a]=-1;
-			}
-			for(int a=0;a<ROU_NUM;a++){
-				//printf("%d ",d[a]);
-			}
-			int source = my_num;
-
-			d[source]=0;
-			int u=-1;
-			int v=-1;
-			int small=-1;
-			int small_dist=INFINITE+1;
-
-			for(int count=0; count<ROU_NUM; count++){
-				small=-1;
-				small_dist=INFINITE+1;
-				u=-1; v=-1;
-				for(int b=0;b<ROU_NUM;b++){
-					if((set_c[b]==1) && (small_dist > d[b])){
-						small_dist = d[b];
-						small = b;
-					}
-				}
-				set_c[small]=0;
-				set_s[small]=1;
-				u=small;
-				for(int b=0;b<ROU_NUM;b++){
-					v=-1;
-					if(set_c[b]==0)
-						continue;
-					v=b;
-					//      printf("u is %d , v is %d \n",u,v);
-					if(d[v] > CT[u][v]+d[u]){
-						d[v]=CT[u][v]+d[u];
-						edge[v]=u;
-						//rt.next[v]=edge[v];
-						int search_n=v;
-						while(1){
-							if(edge[search_n]==source){
-								rt.next[v]=search_n;
-								break;
-							}
-							search_n=edge[search_n];
-						}
-						rt.cost[v]=d[v];
-					}
-				}
-			}
-			//      printf("\n\n------result------\n\n");
-			for(int a=0;a<ROU_NUM;a++){
-				//printf("%d -> %d : %d",source, a, d[a]);
-				//printf(" next %d \n",edge[a]);
-			}
-			printf("\n\n------routing table------\n\n");
-			printf(" dest next cost \n");
-			for(int a=0;a<ROU_NUM;a++){
-				//if(a==my_num)
-				//      continue;
-				printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
-				printf("\n");
-			}
-			//printf("RTRTRTRTRT MAKE TABLE ??? %d \n\n",make_table);
-
-			for(int a=0;a<ROU_NUM;a++){
-				if(CT[a][a]==0){
-					rt_done=1;
-				}
-				else{
-					rt_done=0;
+			while(1){
+				printf("--------------------------RT%d ---------------------------",rt_done);
+				if(rt_done==1){
 					break;
 				}
-			}
+				pthread_mutex_lock(&lock);
+				print_CT();
+				int d[ROU_NUM];
+				int set_s[ROU_NUM];
+				int set_c[ROU_NUM];
 
-			//erase this 1!!!!!!!!!!!!!!!
-			/*
-			   if(make_table==1){
-			   rt_done=1;
-			//printf("fin table?? ");
+				for(int a=0;a<ROU_NUM;a++){
+					d[a]=INFINITE;
+					edge[a]=0;
+					set_c[a]=1;
+					set_s[a]=0;
+					rt.dest[a]=a;
+					rt.next[a]=-1;
+					rt.cost[a]=-1;
+				}
+				for(int a=0;a<ROU_NUM;a++){
+					//printf("%d ",d[a]);
+				}
+				int source = my_num;
+
+				d[source]=0;
+				int u=-1;
+				int v=-1;
+				int small=-1;
+				int small_dist=INFINITE+1;
+
+				for(int count=0; count<ROU_NUM; count++){
+					small=-1;
+					small_dist=INFINITE+1;
+					u=-1; v=-1;
+					for(int b=0;b<ROU_NUM;b++){
+						if((set_c[b]==1) && (small_dist > d[b])){
+							small_dist = d[b];
+							small = b;
+						}
+					}
+					set_c[small]=0;
+					set_s[small]=1;
+					u=small;
+					for(int b=0;b<ROU_NUM;b++){
+						v=-1;
+						if(set_c[b]==0)
+							continue;
+						v=b;
+						//      printf("u is %d , v is %d \n",u,v);
+						if(d[v] > CT[u][v]+d[u]){
+							d[v]=CT[u][v]+d[u];
+							edge[v]=u;
+							//rt.next[v]=edge[v];
+							int search_n=v;
+							while(1){
+								if(edge[search_n]==source){
+									rt.next[v]=search_n;
+									break;
+								}
+								search_n=edge[search_n];
+							}
+							rt.cost[v]=d[v];
+						}
+					}
+				}
+				//      printf("\n\n------result------\n\n");
+				for(int a=0;a<ROU_NUM;a++){
+					//printf("%d -> %d : %d",source, a, d[a]);
+					//printf(" next %d \n",edge[a]);
+				}
+				printf("\n\n------routing table------\n\n");
+				printf(" dest next cost \n");
+				for(int a=0;a<ROU_NUM;a++){
+					//if(a==my_num)
+					//      continue;
+					printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
+					printf("\n");
+				}
+				//printf("RTRTRTRTRT MAKE TABLE ??? %d \n\n",make_table);
+
+				for(int a=0;a<ROU_NUM;a++){
+					if(CT[a][a]==0){
+						rt_done=1;
+					}
+					else{
+						rt_done=0;
+						break;
+					}
+				}
+
+				//erase this 1!!!!!!!!!!!!!!!
+				/*
+				   if(make_table==1){
+				   rt_done=1;
+				//printf("fin table?? ");
+				for(int a=0;a<ROU_NUM;a++){
+				//printf("%d -> %d : %d",source, a, d[a]);
+				//printf(" next %d \n",edge[a]);
+				}
+				}
+				 */
+				pthread_mutex_unlock(&lock);
+			}
+			return 0;
+		}
+
+
+
+		void print_CT(){
 			for(int a=0;a<ROU_NUM;a++){
-			//printf("%d -> %d : %d",source, a, d[a]);
-			//printf(" next %d \n",edge[a]);
+				for(int b=0;b<ROU_NUM;b++){
+					printf("%6d ",CT[a][b]);
+				}
+				printf("\n");
 			}
-			}
-			 */
-			pthread_mutex_unlock(&lock);
 		}
-		return 0;
-	}
-
-
-
-	void print_CT(){
-		for(int a=0;a<ROU_NUM;a++){
-			for(int b=0;b<ROU_NUM;b++){
-				printf("%6d ",CT[a][b]);
-			}
-			printf("\n");
-		}
-	}
 
