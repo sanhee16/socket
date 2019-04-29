@@ -529,7 +529,6 @@ static void * sndhandle(void *arg){
 	while(1){
 
 		pthread_mutex_lock(&lock);
-		print_CT();
 		ct_snd=ptr_ct_snd;
 		ptr_ct_snd++;
 		if(ptr_ct_snd==MAX_BUF){
