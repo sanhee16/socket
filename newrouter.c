@@ -15,6 +15,9 @@
 //#include "making_rt.h"
 #define CLI_NUM 2
 #define MAX_BUF 100
+#define CT_SIZE 4*4*ROU_NUM*ROU_NUM
+
+
 
 pthread_mutex_t lock;
 pthread_mutex_t data_lock_read;
@@ -65,14 +68,19 @@ int fin_costtable[ROU_NUM]={0,};
 int get_buf[ROU_NUM];
 int data_get_buf[ROU_NUM];
 
+typedef struct{
+	int ct_buffer[ROU_NUM][ROU_NUM];
+	int exist_buf;
+}CT_BUF;
 
-
+CT_BUF ct_buf[MAX_BUF];
+/*
 typedef struct snd_ct{
 	int CT[ROU_NUM][ROU_NUM];
-	int visit[ROU_NUM];
-	int finish;
-	int check_finish[ROU_NUM];
-	int check_fin;
+//	int visit[ROU_NUM];
+//	int finish;
+//	int check_finish[ROU_NUM];
+//	int check_fin;
 }SND_CT;
 
 typedef struct buf{
@@ -81,7 +89,7 @@ typedef struct buf{
 }BUF;
 
 BUF ct_buffer[MAX_BUF];
-
+*/
 
 ///////////////////////////////////////////////DATA/////////////
 pthread_t data_rcv_thread[100];
@@ -134,7 +142,7 @@ int connect_rou_data(char*);
 char* server_ip = "220.149.244.211";
 char* client_ip[CLI_NUM];
 
-
+/*
 void print_snd(SND_CT pp){
 	printf("CT \n");
 	for(int a=0;a<ROU_NUM;a++){
@@ -155,12 +163,12 @@ void print_snd(SND_CT pp){
 	printf("\nfinish\n %d\n",pp.finish);
 
 }
-
+*/
 //pthread_mutex_t lock;
 pthread_cond_t cond;
 
 
-BUF buffer;
+//BUF buffer;
 
 static void * rcvhandle(void *);
 static void * sndhandle(void *);
@@ -458,14 +466,24 @@ static void * rcvhandle(void *arg){
 	int ct_read=0;
 	while(1){
 		fflush(NULL);
+		/*
 		SND_CT get_ct;
 		memset(&(get_ct.CT),0,sizeof(get_ct.CT));
 		memset(&(get_ct.visit),0,sizeof(get_ct.visit));
 		get_ct.finish=0;
 		int len;
 		SND_CT get;
+		*/
+		int get_ct[ROU_NUM][ROU_NUM];
+		int copy[ROU_NUM][ROU_NUM];
+		memset(&get_ct,0, CT_SIZE);
 
-		len = recv(cli_sockfd, &get_ct, sizeof(SND_CT), 0);
+		int len = recv(cli_sockfd, &get_ct, CT_SIZE, 0);
+		memcpy(copy,get_ct,CT_SIZE);
+		//memcpy(ct_buf[  ].ct_buffer, get_ct, CT_SIZE);
+
+		//strncpy(&(ct_buf.ct_buffer),&get_ct,CT_SIZE);
+		//len = recv(cli_sockfd, &get_ct, sizeof(SND_CT), 0);
 		if(len<0)
 			continue;
 		while(1){
@@ -480,11 +498,14 @@ static void * rcvhandle(void *arg){
 			pthread_mutex_lock(&ct_lock[ct_read]);
 			pthread_mutex_unlock(&lock);
 
-			if(exist_buf[ct_read]==1){
+			if(ct_buf[ct_read].exist_buf==1){
 				pthread_mutex_unlock(&ct_lock[ct_read]);
 				continue;
 			}
+			memcpy(ct_buf[ct_read].ct_buffer, copy, CT_SIZE);
+			ct_buf[ct_read].exist_buf = 1;	
 
+			/*
 			if(get_ct.finish==1){
 				get_ct.check_finish[my_num]=1;
 			}
@@ -497,7 +518,8 @@ static void * rcvhandle(void *arg){
 			exist_buf[ct_read] = 1;
 			fflush(NULL);
 			
-			
+			*/
+
 			pthread_mutex_unlock(&ct_lock[ct_read]);
 			break;
 		}
@@ -509,25 +531,22 @@ int ptr_ct_snd=0;
 
 static void * sndhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
-
+/*
 	size_t getline_len;
 	int ret;
 	int done=0;
 	SND_CT first;
-
 	int ct_snd=0;
 
-	arr_copy(first.CT,CT);
-	for(int a=0;a<ROU_NUM;a++){
-		first.visit[a]=0;
-		first.check_finish[a]=0;
-	}
-	first.visit[my_num]=1;
-	first.finish=0;
-	send(cli_sockfd, (char*)&first, sizeof(SND_CT), 0);
+*/
+	int ct_snd=0;
+
+	int first[ROU_NUM][ROU_NUM];
+	memset(&first,0,CT_SIZE);
+	arr_copy(first, CT);
+	send(cli_sockfd, (char*)&first, CT_SIZE, 0);
 	
 	while(1){
-
 		pthread_mutex_lock(&lock);
 		ct_snd=ptr_ct_snd;
 		ptr_ct_snd++;
@@ -537,79 +556,29 @@ static void * sndhandle(void *arg){
 		pthread_mutex_lock(&ct_lock[ct_snd]);
 		pthread_mutex_unlock(&lock);
 		
-		if(exist_buf[ct_snd]==0){
+		if(ct_buf[ct_snd].exist_buf==0){
 			pthread_mutex_unlock(&ct_lock[ct_snd]);
 			continue;
 		}
-		if(exist_buf[ct_snd]==1){
-			SND_CT snd_ct;
-			memcpy(&snd_ct,&(ct_buffer[ct_snd].recv_buf),sizeof(SND_CT));
-			//print_CT();	
-
-			int snd_sockfd = ct_buffer[ct_snd].cli_sockfd;
-
+		if(ct_buf[ct_snd].exist_buf==1){
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
-					if(ct_buffer[ct_snd].recv_buf.CT[a][b]!=INFINITE && CT[a][b]==INFINITE){
-						CT[a][b]=ct_buffer[ct_snd].recv_buf.CT[a][b];
+					if(ct_buf[ct_snd].ct_buffer[a][b]!=INFINITE && CT[a][b]== INFINITE){
+					CT[a][b]=ct_buf[ct_snd].ct_buffer[a][b];
 					}
-					/*
-					if(ct_buffer[ct_snd].recv_buf.CT[a][b]==INFINITE && CT[a][b]==INFINITE){
-						CT[a][b]=CT[a][b];
-					}
-					else if(ct_buffer[ct_snd].recv_buf.CT[a][b]!=INFINITE && CT[a][b]==INFINITE){
-						CT[a][b]=ct_buffer[ct_snd].recv_buf.CT[a][b];
-					}
-					else if(ct_buffer[ct_snd].recv_buf.CT[a][b]== INFINITE && CT[a][b]!=INFINITE){
-						ct_buffer[ct_snd].recv_buf.CT[a][b]=CT[a][b];
-						CT[a][b]=CT[a][b];
-					}
-					else if(ct_buffer[ct_snd].recv_buf.CT[a][b]!=INFINITE && CT[a][b]!=INFINITE){
-						CT[a][b]=ct_buffer[ct_snd].recv_buf.CT[a][b];
-					}
-					*/
 				}
 			}
-			exist_buf[ct_snd]=0;
-			memset(&ct_buffer[ct_snd].recv_buf,0,sizeof(SND_CT));
+			ct_buf[ct_snd].exist_buf=0;
+			memset(&ct_buf[ct_snd], 0, sizeof(CT_BUF));
 			pthread_mutex_unlock(&ct_lock[ct_snd]);
-			//print_CT();
-			for(int a=0;a<ROU_NUM;a++){
-					arr_copy(snd_ct.CT, CT);
-					snd_ct.visit[my_num]=1;
-					for(int x=0;x<ROU_NUM;x++){
-						if(snd_ct.visit[x]==1){
-
-						}
-						else{
-							snd_ct.finish=0;
-							break;
-						}
-						snd_ct.finish=1;
-					}
-					if(snd_ct.finish==1){
-						for(int x=0;x<ROU_NUM;x++){
-							if(snd_ct.check_finish[x]==1){
-
-							}
-							else if(snd_ct.check_finish[x]!=1){
-								snd_ct.check_fin=0;
-								done=0;
-								break;
-							}
-							snd_ct.check_fin=1;
-							done=1;
-						}
-					}
-					int len = sizeof(snd_ct);
-					send(cli_sockfd,(char*)&snd_ct, sizeof(SND_CT), 0);
-			}
+			int len = sizeof(CT_BUF);
+			send(cli_sockfd,(char*)&ct_buf[ct_snd],sizeof(CT_BUF),0);
+			
 			continue;
 		}
 		fflush(NULL);
 		pthread_mutex_unlock(&ct_lock[ct_snd]);
 	}
-	while(1);
 }
 
 
