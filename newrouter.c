@@ -587,8 +587,9 @@ static void * sndhandle(void *arg){
 	pthread_create(&making_rr[my_num],NULL,RT_handler,&done);
 	
 	while(1){
-		pthread_mutex_lock(&lock);
 
+		pthread_mutex_lock(&lock);
+		print_CT();
 		ct_snd=ptr_ct_snd;
 		ptr_ct_snd++;
 		if(ptr_ct_snd==MAX_BUF){
@@ -601,17 +602,11 @@ static void * sndhandle(void *arg){
 			pthread_mutex_unlock(&ct_lock[ct_snd]);
 			continue;
 		}
-		if(done==1){
-			make_table=1;
-		}
 		if(exist_buf[ct_snd]==1){
 			SND_CT snd_ct;
 			memcpy(&snd_ct,&(ct_buffer[ct_snd].recv_buf),sizeof(SND_CT));
-			print_CT();	
+			//print_CT();	
 
-			if(ct_buffer[ct_snd].recv_buf.check_fin==1){
-				make_table=1;
-			}
 			int snd_sockfd = ct_buffer[ct_snd].cli_sockfd;
 
 			for(int a=0;a<ROU_NUM;a++){
@@ -648,7 +643,7 @@ static void * sndhandle(void *arg){
 						}
 						snd_ct.finish=1;
 					}
-					if(ct_buffer[ct_snd].recv_buf.finish==1){
+					if(snd_ct.finish==1){
 						for(int x=0;x<ROU_NUM;x++){
 							if(snd_ct.check_finish[x]==1){
 
@@ -1146,7 +1141,7 @@ static void * data_sndhandle(void *arg){
 					break;
 				}
 				pthread_mutex_lock(&lock);
-			//	print_CT();
+				print_CT();
 				int d[ROU_NUM];
 				int set_s[ROU_NUM];
 				int set_c[ROU_NUM];
@@ -1230,18 +1225,6 @@ static void * data_sndhandle(void *arg){
 						break;
 					}
 				}
-
-				//erase this 1!!!!!!!!!!!!!!!
-				/*
-				   if(make_table==1){
-				   rt_done=1;
-				//printf("fin table?? ");
-				for(int a=0;a<ROU_NUM;a++){
-				//printf("%d -> %d : %d",source, a, d[a]);
-				//printf(" next %d \n",edge[a]);
-				}
-				}
-				 */
 				pthread_mutex_unlock(&lock);
 			}
 			return 0;
