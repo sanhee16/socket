@@ -530,7 +530,7 @@ static void * sndhandle(void *arg){
 	int ct_snd=0;
 
 */
-	pthread_create(&making_rr[my_num],NULL,RT_handler,&done);
+	pthread_create(&making_rr[my_num],NULL,RT_handler,NULL);
 	int takeit[MAX_BUF]={0, };
 	int ct_snd=0;
 
