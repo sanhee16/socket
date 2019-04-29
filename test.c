@@ -549,13 +549,12 @@ static void * srv_handle(void * arg)
 			}
 			pthread_mutex_lock(&ct_lock[ct_snd]);
 			pthread_mutex_unlock(&lock);
-
+			
 			if(ct_buf[ct_snd].exist_buf==0){
 				pthread_mutex_unlock(&ct_lock[ct_snd]);
 				continue;
 			}
 			if(ct_buf[ct_snd].exist_buf==1 && takeit[ct_snd]==0){
-				print_CT();
 				for(int a=0;a<ROU_NUM;a++){
 					for(int b=0;b<ROU_NUM;b++){
 						if(ct_buf[ct_snd].ct_buffer[a][b]!=INFINITE && CT[a][b]== INFINITE){
@@ -580,7 +579,7 @@ static void * srv_handle(void * arg)
 				int len = sizeof(CT_BUF);
 				arr_copy(ct_buf[ct_snd].ct_buffer, CT);
 				send(cli_sockfd,(char*)&ct_buf[ct_snd],sizeof(CT_BUF),0);
-
+				print_CT();
 				buf_count[ct_snd]--;
 				if(buf_count[ct_snd]==0){
 					ct_buf[ct_snd].exist_buf=0;
@@ -941,7 +940,7 @@ static void * srv_handle(void * arg)
 				continue;
 			}
 			if(data_exist_buf_arr[ch]==1){
-				printf("buffer! \n");
+				//printf("buffer! \n");
 				MSG_T snd_msg;
 				memset(&snd_msg,0,sizeof(MSG_T));
 				memcpy(&snd_msg,&buffer_arr[ch],sizeof(MSG_T));
@@ -963,8 +962,8 @@ static void * srv_handle(void * arg)
 					compare=4;
 				}
 
-				printf("recv ip is %s \n",snd_msg.snd_ip);
-				printf("compare %d my num %d \n\n",compare,my_num);
+				//printf("recv ip is %s \n",snd_msg.snd_ip);
+				//printf("compare %d my num %d \n\n",compare,my_num);
 				if(compare==my_num){
 					if(real_cli_srv_sockfd==cli_sockfd){
 						//pthread_mutex_lock(&data_lock);
