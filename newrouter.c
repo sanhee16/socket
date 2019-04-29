@@ -55,7 +55,6 @@ pthread_t data_srv_thread;
 
 int router_num;
 int exist_buf[MAX_BUF]={0, };
-int buf_count=0;
 int thds=0;
 
 int neighbor_sock[ROU_NUM] = {-1, };
@@ -65,7 +64,6 @@ int client_num;
 int is_fin = 0;
 int close_cli;
 int fin_costtable[ROU_NUM]={0,};
-int get_buf[ROU_NUM];
 int data_get_buf[ROU_NUM];
 
 typedef struct{
@@ -73,6 +71,7 @@ typedef struct{
 	int exist_buf;
 }CT_BUF;
 
+int buf_count[MAX_BUF];
 CT_BUF ct_buf[MAX_BUF];
 /*
 typedef struct snd_ct{
@@ -497,7 +496,8 @@ static void * rcvhandle(void *arg){
 			arr_copy(ct_buf[ct_read].ct_buffer, copy);	
 			//memcpy(ct_buf[ct_read].ct_buffer, copy, CT_SIZE);
 			ct_buf[ct_read].exist_buf = 1;
-
+			buf_count[ct_read]=2;	
+			
 			/*
 			if(get_ct.finish==1){
 				get_ct.check_finish[my_num]=1;
@@ -532,6 +532,7 @@ static void * sndhandle(void *arg){
 	int ct_snd=0;
 
 */
+	int takeit[MAX_BUF]={0, };
 	int ct_snd=0;
 
 	int first[ROU_NUM][ROU_NUM];
@@ -555,7 +556,7 @@ static void * sndhandle(void *arg){
 			pthread_mutex_unlock(&ct_lock[ct_snd]);
 			continue;
 		}
-		if(ct_buf[ct_snd].exist_buf==1){
+		if(ct_buf[ct_snd].exist_buf==1 && takeit[ct_snd]==0){
 			print_CT();
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
@@ -566,11 +567,16 @@ static void * sndhandle(void *arg){
 					}
 				}
 			}
-			ct_buf[ct_snd].exist_buf=0;
-			memset(&ct_buf[ct_snd], 0, sizeof(CT_BUF));
+			takeit[ct_snd]=1;
 			int len = sizeof(CT_BUF);
-			arr_copy(ct_buf[ct_snd].ct_buffer,CT);
+			arr_copy(ct_buf[ct_snd].ct_buffer, CT);
 			send(cli_sockfd,(char*)&ct_buf[ct_snd],sizeof(CT_BUF),0);
+
+			buf_count[ct_snd]--;
+			if(buf_count[ct_snd]==0){
+				ct_buf[ct_snd].exist_buf=0;
+				memset(&ct_buf[ct_snd], 0, sizeof(CT_BUF));
+			}
 			pthread_mutex_unlock(&ct_lock[ct_snd]);
 			continue;
 		}
