@@ -560,8 +560,9 @@ static void * sndhandle(void *arg){
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
 					if(ct_buf[ct_snd].ct_buffer[a][b]!=INFINITE && CT[a][b]== INFINITE){
-						CT[a][b]=CT[a][b];
-						//CT[a][b]=ct_buf[ct_snd].ct_buffer[a][b];
+						//CT[a][b]=CT[a][b];
+						printf("[%d][%d] %d -> %d \n",a,b,CT[a][b],ct_buf[ct_snd].ct_buffer[a][b]);
+						CT[a][b]=ct_buf[ct_snd].ct_buffer[a][b];
 					}
 				}
 			}
