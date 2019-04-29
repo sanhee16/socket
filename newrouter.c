@@ -550,6 +550,10 @@ static void * sndhandle(void *arg){
 
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
+					if(ct_buffer[ct_snd].recv_buf.CT[a][b]!=INFINITE && CT[a][b]==INFINITE){
+						CT[a][b]=ct_buffer[ct_snd].recv_buf.CT[a][b];
+					}
+					/*
 					if(ct_buffer[ct_snd].recv_buf.CT[a][b]==INFINITE && CT[a][b]==INFINITE){
 						CT[a][b]=CT[a][b];
 					}
@@ -563,6 +567,7 @@ static void * sndhandle(void *arg){
 					else if(ct_buffer[ct_snd].recv_buf.CT[a][b]!=INFINITE && CT[a][b]!=INFINITE){
 						CT[a][b]=ct_buffer[ct_snd].recv_buf.CT[a][b];
 					}
+					*/
 				}
 			}
 			exist_buf[ct_snd]=0;
