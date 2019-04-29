@@ -470,6 +470,14 @@ static void * srv_handle(void * arg)
 			memset(&copy,0,CT_SIZE);
 
 			int len = recv(cli_sockfd, &get_ct, CT_SIZE, 0);
+			for(int a=0;a<ROU_NUM;a++){
+				for(int b=0;b<ROU_NUM;b++){
+					printf("recv : %d ",copy[a][b]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+
 			arr_copy(copy,get_ct);
 			//memcpy(&copy,&get_ct,CT_SIZE);
 			if(len<0)
@@ -495,8 +503,15 @@ static void * srv_handle(void * arg)
 				//memcpy(ct_buf[ct_read].ct_buffer, copy, CT_SIZE);
 				ct_buf[ct_read].exist_buf = 1;
 				buf_count[ct_read]=2;
-
+				for(int a=0;a<ROU_NUM;a++){
+					                    for(int b=0;b<ROU_NUM;b++){
+					printf("recv copy: %d ",copy[a][b]);
+										}
+										printf("\n");
+				}
+				printf("\n");
 				/*
+
 				   if(get_ct.finish==1){
 				   get_ct.check_finish[my_num]=1;
 				   }
@@ -579,7 +594,9 @@ static void * srv_handle(void * arg)
 				int len = sizeof(CT_BUF);
 				arr_copy(ct_buf[ct_snd].ct_buffer, CT);
 				send(cli_sockfd,(char*)&ct_buf[ct_snd],sizeof(CT_BUF),0);
-				print_CT();
+				
+				
+				//print_CT();
 				buf_count[ct_snd]--;
 				if(buf_count[ct_snd]==0){
 					ct_buf[ct_snd].exist_buf=0;
