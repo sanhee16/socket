@@ -951,6 +951,7 @@ static void * data_rcvhandle(void *arg){
 			memcpy(&buffer_arr[ch_read],&data_buffer.data_recv_buf,sizeof(MSG_T));
 			fflush(NULL);
 			pthread_mutex_unlock(&data_lock_arr[ch_read]);
+			printf("read buffer in %d \n",ch_read);
 			printf("break \n");
 			break;
 		}
@@ -973,8 +974,9 @@ static void * data_sndhandle(void *arg){
 	//print_CT();
 	while(1){
 		fflush(NULL);
+		
 		pthread_mutex_lock(&data_lock);
-		printf("snd in the mutex !\n ");
+//		printf("snd in the mutex !\n ");
 		ch=ptr_cons;
 		ptr_cons++;
 		if(ptr_cons==MAX_BUF){
@@ -983,7 +985,7 @@ static void * data_sndhandle(void *arg){
 		pthread_mutex_lock(&data_lock_arr[ch]);
 		pthread_mutex_unlock(&data_lock);
 
-		printf("snd in the mutex ch!\n ");
+//		printf("snd in the mutex ch!\n ");
 
 		if(data_exist_buf_arr[ch]==0){
 			pthread_mutex_unlock(&data_lock_arr[ch]);
@@ -1022,32 +1024,17 @@ static void * data_sndhandle(void *arg){
 					printf("send to server !\n");
 					data_exist_buf_arr[ch]=0;
 					memset(&buffer_arr[ch],0,sizeof(MSG_T));
-					//data_exist_buf=0;
 					memset(&data_buffer,0,sizeof(DATA_BUF));
 					fflush(NULL);
-					/*
-					   ch++;
-					   if(ch==MAX_BUF){
-					   ch=0;
-					 */										                
 					pthread_mutex_unlock(&data_lock_arr[ch]);
-					//pthread_mutex_unlock(&data_lock);
 					continue;
 				}
-					   else{
-						   pthread_mutex_unlock(&data_lock_arr[ch]);
-						   //pthread_mutex_unlock(&data_lock);
-						   continue;
-					   }
+					 else{
+					   pthread_mutex_unlock(&data_lock_arr[ch]);
+					   continue;
+					}
 				}
-
-
-				/*
-				 */
-
-				//other case : to router
 				int snd_sockfd=-1;
-				//check routing table (rt) -> set snd_sockfd
 				int dest_num=-1;
 				if(*(snd_msg.recv_ip + 14)=='1'){
 					dest_num=0;
@@ -1083,10 +1070,9 @@ static void * data_sndhandle(void *arg){
 
 				fflush(NULL);
 
-				if(my_neighbor[snd_sockfd]==1 && data_neighbor_sock[snd_sockfd]==cli_sockfd){
-					//pthread_mutex_lock(&data_lock);
+				if(data_neighbor_sock[snd_sockfd]==cli_sockfd){
 					fflush(NULL);
-					send(data_neighbor_sock[snd_sockfd],(char*)&snd_msg, sizeof(MSG_T), 0);
+					send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 					perror("send");
 
 					printf("send ip is %s \n",snd_msg.snd_ip);
@@ -1096,20 +1082,13 @@ static void * data_sndhandle(void *arg){
 					memset(&data_buffer,0,sizeof(DATA_BUF));
 
 					pthread_mutex_unlock(&data_lock_arr[ch]);
-					//pthread_mutex_unlock(&data_lock);
-					/* 
-					   ch++;
-					   if(ch==MAX_BUF){
-					   ch=0;
-					   }
-					 */
 					fflush(NULL);
 					fflush(stdin);
 
 				}
+				pthread_mutex_unlock(&data_lock_arr[ch]);
 				fflush(NULL);
 				fflush(stdin);
-
 				//pthread_mutex_unlock(&data_lock);
 
 			 } //buffer exist 
