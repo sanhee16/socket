@@ -183,7 +183,7 @@ int connect_rou(char* );
 int main(int argc, char *argv[])
 {
 	makeCT();	
-	pthread_create(&making_rr[my_num],NULL,RT_handler,NULL);
+	//pthread_create(&making_rr[my_num],NULL,RT_handler,NULL);
 	//client_ip[0]="220.149.244.211";
 	//client_ip[1]="220.149.244.212";
 	//print_CT();
@@ -530,6 +530,7 @@ static void * sndhandle(void *arg){
 	int ct_snd=0;
 
 */
+	pthread_create(&making_rr[my_num],NULL,RT_handler,&done);
 	int takeit[MAX_BUF]={0, };
 	int ct_snd=0;
 
