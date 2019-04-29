@@ -463,15 +463,7 @@ static void * rcvhandle(void *arg){
 		memset(&(get_ct.visit),0,sizeof(get_ct.visit));
 		get_ct.finish=0;
 		int len;
-		SND_CT *get;
-		int rcv_sock;
-		for(int x=0;x<ROU_NUM;x++){
-			if(neighbor_sock[x]==cli_sockfd){
-				rcv_sock=x;
-				break;
-			}
-		}
-
+		SND_CT get;
 
 		len = recv(cli_sockfd, &get_ct, sizeof(SND_CT), 0);
 		if(len<0)
@@ -502,7 +494,7 @@ static void * rcvhandle(void *arg){
 			get_ct.visit[my_num]=1;
 			//memcpy(&(buffer.recv_buf),&get_ct,sizeof(SND_CT));
 			memcpy(&ct_buffer[ct_read].recv_buf,&get_ct,sizeof(SND_CT));
-			ct_buffer[ct_read].cli_sockfd = rcv_sock;
+			ct_buffer[ct_read].cli_sockfd = cli_sockfd;
 			//buffer.cli_sockfd = rcv_sock;
 			exist_buf[ct_read] = 1;
 			//buf_count[ct_read]=client_num;
