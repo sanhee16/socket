@@ -492,15 +492,14 @@ static void * rcvhandle(void *arg){
 				done=1;
 			}
 			get_ct.visit[my_num]=1;
-			//memcpy(&(buffer.recv_buf),&get_ct,sizeof(SND_CT));
 			memcpy(&ct_buffer[ct_read].recv_buf,&get_ct,sizeof(SND_CT));
 			ct_buffer[ct_read].cli_sockfd = cli_sockfd;
-			//buffer.cli_sockfd = rcv_sock;
 			exist_buf[ct_read] = 1;
-			//buf_count[ct_read]=client_num;
 			fflush(NULL);
+			
+			
 			pthread_mutex_unlock(&ct_lock[ct_read]);
-			//pthread_mutex_unlock(&lock);
+			break;
 		}
 	}
 	while(1);
@@ -601,9 +600,10 @@ static void * sndhandle(void *arg){
 					int len = sizeof(snd_ct);
 					send(cli_sockfd,(char*)&snd_ct, sizeof(SND_CT), 0);
 			}
+			continue;
 		}
 		fflush(NULL);
-		//pthread_mutex_unlock(&lock);
+		pthread_mutex_unlock(&ct_lock[ct_snd]);
 	}
 	while(1);
 }
