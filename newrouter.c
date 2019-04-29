@@ -17,6 +17,7 @@
 #define MAX_BUF 100
 
 pthread_mutex_t lock;
+pthread_mutex_t data_lock_read;
 pthread_mutex_t data_lock_arr[MAX_BUF];
 
 int edge[ROU_NUM];
@@ -229,7 +230,7 @@ static void * srv_handle(void * arg)
 
 	pthread_mutex_init(&lock, NULL);
 	pthread_cond_init(&cond, NULL);
-
+	pthread_mutex_init(&data_lock_read,NULL);
 	printf("route bind\n");
 
 	int count_srv=0;
@@ -751,6 +752,9 @@ static void * data_srv_handle(void * arg){
 	}
 	pthread_create(&data_client, NULL, data_cli_handle, NULL);
 	pthread_mutex_init(&data_lock, NULL);
+	for(int a=0;a<MAX_BUF;a++){
+		pthread_mutex_init(&data_lock_arr[a], NULL);
+	}
 	printf("data bind\n");
 	int count_srv=0;
 	for(int a=0;a<ROU_NUM;a++){
@@ -895,121 +899,70 @@ int connect_rou_data(char* send_ip){
 
 }
 
-
+int ptr_read=0;
 static void * data_rcvhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
 	//printf("rcv %d \n",cli_sockfd);
 	printf("hello");
 
 	int ch_read=0;
-	int ptr_read=0;
+	//int ptr_read=0;
 	int done=0;
 	while(1){
 		fflush(NULL);
 		MSG_T get_msg;
 		memset(&get_msg,0,sizeof(MSG_T));
 
-		//printf("get init %s \n",get_msg->msg);
 		int len;
-		int rcv_sock;
-		/*
-		   for(int x=0;x<ROU_NUM;x++){
-		   printf("data: neighbor? %d \n",data_neighbor_sock[x]);
-
-		   if(data_neighbor_sock[x]==cli_sockfd){
-		   rcv_sock=x;
-		   break;
-		   }
-		   }
-		 */
-		//MSG_T* get_msg;
-		//char getBuf[400];
-		/*
-		   MSG_T copy;
-		   memset(&copy,0,sizeof(MSG_T));
-		   len = recv(cli_sockfd, (char *)&copy, sizeof(MSG_T), 0);
-		 */
-
 		len = recv(cli_sockfd, (char *)&get_msg, sizeof(MSG_T), 0);
-		//pthread_mutex_lock(&data_lock);
-		//memcpy(&get_msg,&copy,sizeof(MSG_T));
-		//memset(&copy,0,sizeof(MSG_T));
 		if(len<0){
-			//pthread_mutex_unlock(&data_lock);	
 			continue;
 		}
-		//len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
-
-		//pthread_mutex_lock(&data_lock);
 		while(1){
-		pthread_mutex_lock(&data_lock_arr[ch_read]);
-		ptr_read = ch_read;
-		ch_read++;
-		if(ch_read==MAX_BUF){
-			ch_read=0;
-		}
-		if(data_exist_buf_arr[ch_read]==1){
-			pthread_mutex_unlock(&data_lock_arr[ch_read]);
-			continue;
-		}
-		//getBuf[400]='\0';
-		//MSG_T* get_msg;
-		//get_msg = (MSG_T*)getBuf;
+			fflush(NULL);
+			pthread_mutex_lock(&data_lock_read);
+			//pthread_mutex_lock(&data_lock_arr[ptr_read]);
+			ch_read = ptr_read;
+			ptr_read++;
+			if(ptr_read==MAX_BUF){
+				ptr_read=0;
+			}
+			pthread_mutex_lock(&data_lock_arr[ch_read]);
+			pthread_mutex_unlock(&data_lock_read);
 
-		printf("\ndata rcv(data) : %s ",get_msg.msg);
-		printf("data rcv(snd ip) : %s \n",get_msg.snd_ip);
-		printf("data rcv(recv ip) : %s \n",get_msg.recv_ip);
+			if(data_exist_buf_arr[ch_read]==1){
+				pthread_mutex_unlock(&data_lock_arr[ch_read]);
+				continue;
+			}
 
-		strncpy(data_buffer.data_recv_buf.msg, get_msg.msg,360);
-		strncpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip,16);
-		strncpy(data_buffer.data_recv_buf.recv_ip, get_msg.recv_ip,16);
+			printf("\ndata rcv(data) : %s ",get_msg.msg);
+			printf("data rcv(snd ip) : %s \n",get_msg.snd_ip);
+			printf("data rcv(recv ip) : %s \n",get_msg.recv_ip);
 
-		data_buffer.data_recv_buf.snd_port = get_msg.snd_port;
-		data_buffer.data_recv_buf.recv_port = get_msg.recv_port;
+			strncpy(data_buffer.data_recv_buf.msg, get_msg.msg,360);
+			strncpy(data_buffer.data_recv_buf.snd_ip, get_msg.snd_ip,16);
+			strncpy(data_buffer.data_recv_buf.recv_ip, get_msg.recv_ip,16);
 
-		//memcpy(&(data_buffer.data_recv_buf),&get_msg,sizeof(MSG_T));
-		data_buffer.cli_sockfd = cli_sockfd;
+			data_buffer.data_recv_buf.snd_port = get_msg.snd_port;
+			data_buffer.data_recv_buf.recv_port = get_msg.recv_port;
 
-		printf("recv ip(snd) is %s \n",get_msg.snd_ip);
-		printf("recv ip(snd/cpy) is %s \n",data_buffer.data_recv_buf.snd_ip);
-
-		//	for(int ch=0;ch<MAX_BUF;ch++){
-		if(data_exist_buf_arr[ch_read]==0){
+			data_buffer.cli_sockfd = cli_sockfd;
 			data_exist_buf_arr[ch_read]=1;
 			memcpy(&buffer_arr[ch_read],&data_buffer.data_recv_buf,sizeof(MSG_T));
-			/*
-			   if(*(data_buffer.data_recv_buf.snd_ip+14)=='1'){
-			   ch++;
-			   data_exist_buf_arr[ch_read]=1;
-			   memcpy(&buffer_arr[ch_read],&data_buffer.data_recv_buf,sizeof(MSG_T));
-			   }
-			 */
-			//memset(&data_buffer,0,sizeof(DATA_BUF));
-			//break;
+			fflush(NULL);
+			pthread_mutex_unlock(&data_lock_arr[ch_read]);
+			printf("break \n");
+			break;
 		}
-		fflush(NULL);
-		pthread_mutex_unlock(&data_lock_arr[ch_read]);
-		break;
-		
-		/*
-		   if(ch==MAX_BUF-1){
-		   break;
-		   }
-		 */
-		//	}
-		//data_exist_buf = 1;
-		//fflush(NULL);
-		//pthread_mutex_unlock(&data_lock_arr[ch_read]);
-	}
 	}
 	while(1);
 }
 
-int ch=0;
+int ptr_cons=0;
 
 static void * data_sndhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
-	int ptr_cons=0;
+	int ch=0;
 	size_t getline_len;
 	int ret;
 	int done=0;
@@ -1020,19 +973,13 @@ static void * data_sndhandle(void *arg){
 	//print_CT();
 	while(1){
 		fflush(NULL);
-		//pthread_mutex_lock(&data_lock);
-		//for(int ch=0;ch<MAX_BUF;ch++){
-
-		//int ch=0;
-		//pthread_mutex_lock(&data_lock);
 		pthread_mutex_lock(&data_lock);
 		printf("snd in the mutex !\n ");
-		ptr_cons=ch;
-		ch++;
-		if(ch==MAX_BUF){
-			ch=0;
+		ch=ptr_cons;
+		ptr_cons++;
+		if(ptr_cons==MAX_BUF){
+			ptr_cons=0;
 		}
-
 		pthread_mutex_lock(&data_lock_arr[ch]);
 		pthread_mutex_unlock(&data_lock);
 
@@ -1043,12 +990,10 @@ static void * data_sndhandle(void *arg){
 			continue;
 		}
 		if(data_exist_buf_arr[ch]==1){
-			//pthread_mutex_lock(&data_lock);	
-			//if(data_exist_buf==1){
+			printf("buffer! \n");
 			MSG_T snd_msg;
 			memset(&snd_msg,0,sizeof(MSG_T));
 			memcpy(&snd_msg,&buffer_arr[ch],sizeof(MSG_T));
-			//memcpy(&snd_msg,&(data_buffer.data_recv_buf),sizeof(MSG_T));
 
 			int compare=-1;
 			if(*(snd_msg.recv_ip+14)=='1'){
@@ -1089,12 +1034,12 @@ static void * data_sndhandle(void *arg){
 					//pthread_mutex_unlock(&data_lock);
 					continue;
 				}
-				else{
-					pthread_mutex_unlock(&data_lock_arr[ch]);
-					//pthread_mutex_unlock(&data_lock);
-					continue;
-			   }
-			}
+					   else{
+						   pthread_mutex_unlock(&data_lock_arr[ch]);
+						   //pthread_mutex_unlock(&data_lock);
+						   continue;
+					   }
+				}
 
 
 				/*
@@ -1167,10 +1112,12 @@ static void * data_sndhandle(void *arg){
 
 				//pthread_mutex_unlock(&data_lock);
 
-			}//end while loop
+			 } //buffer exist 
+			
+			//end while loop
 			//`printf("\n\n---------done-----------\n\n");
 			//print_CT();
-			while(1);
+			//while(1);
 		}
 		while(1);
 		}
