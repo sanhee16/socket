@@ -466,26 +466,17 @@ static void * rcvhandle(void *arg){
 	int ct_read=0;
 	while(1){
 		fflush(NULL);
-		/*
-		SND_CT get_ct;
-		memset(&(get_ct.CT),0,sizeof(get_ct.CT));
-		memset(&(get_ct.visit),0,sizeof(get_ct.visit));
-		get_ct.finish=0;
-		int len;
-		SND_CT get;
-		*/
 		int get_ct[ROU_NUM][ROU_NUM];
 		int copy[ROU_NUM][ROU_NUM];
 		memset(&get_ct,0, CT_SIZE);
+		memset(&copy,0,CT_SIZE);
 
 		int len = recv(cli_sockfd, &get_ct, CT_SIZE, 0);
-		memcpy(copy,get_ct,CT_SIZE);
-		//memcpy(ct_buf[  ].ct_buffer, get_ct, CT_SIZE);
-
-		//strncpy(&(ct_buf.ct_buffer),&get_ct,CT_SIZE);
-		//len = recv(cli_sockfd, &get_ct, sizeof(SND_CT), 0);
+		arr_copy(copy,get_ct);
+		//memcpy(&copy,&get_ct,CT_SIZE);
 		if(len<0)
 			continue;
+		
 		while(1){
 			fflush(NULL);
 			pthread_mutex_lock(&lock);
@@ -502,8 +493,9 @@ static void * rcvhandle(void *arg){
 				pthread_mutex_unlock(&ct_lock[ct_read]);
 				continue;
 			}
-			memcpy(ct_buf[ct_read].ct_buffer, copy, CT_SIZE);
-			ct_buf[ct_read].exist_buf = 1;	
+			arr_copy(ct_buf[ct_read].ct_buffer, copy);	
+			//memcpy(ct_buf[ct_read].ct_buffer, copy, CT_SIZE);
+			ct_buf[ct_read].exist_buf = 1;
 
 			/*
 			if(get_ct.finish==1){
@@ -543,7 +535,9 @@ static void * sndhandle(void *arg){
 
 	int first[ROU_NUM][ROU_NUM];
 	memset(&first,0,CT_SIZE);
-	arr_copy(first, CT);
+	arr_copy(first,CT);
+	//memcpy(&first,&CT,CT_SIZE);
+	//arr_copy(first, CT);
 	send(cli_sockfd, (char*)&first, CT_SIZE, 0);
 	
 	while(1){
@@ -570,10 +564,9 @@ static void * sndhandle(void *arg){
 			}
 			ct_buf[ct_snd].exist_buf=0;
 			memset(&ct_buf[ct_snd], 0, sizeof(CT_BUF));
-			pthread_mutex_unlock(&ct_lock[ct_snd]);
 			int len = sizeof(CT_BUF);
 			send(cli_sockfd,(char*)&ct_buf[ct_snd],sizeof(CT_BUF),0);
-			
+			pthread_mutex_unlock(&ct_lock[ct_snd]);
 			continue;
 		}
 		fflush(NULL);
