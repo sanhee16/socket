@@ -176,7 +176,7 @@ int connect_rou(char* );
 int main(int argc, char *argv[])
 {
 	
-	pthread_create(&making_rr[my_num],NULL,RT_handler,&done);
+	pthread_create(&making_rr[my_num],NULL,RT_handler,NULL);
 	//client_ip[0]="220.149.244.211";
 	//client_ip[1]="220.149.244.212";
 	makeCT();
