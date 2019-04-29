@@ -941,6 +941,7 @@ static void * data_rcvhandle(void *arg){
 		//len = recv(cli_sockfd, &get_msg, sizeof(MSG_T), 0);
 
 		//pthread_mutex_lock(&data_lock);
+		while(1){
 		pthread_mutex_lock(&data_lock_arr[ch_read]);
 		ptr_read = ch_read;
 		ch_read++;
@@ -986,6 +987,10 @@ static void * data_rcvhandle(void *arg){
 			//memset(&data_buffer,0,sizeof(DATA_BUF));
 			//break;
 		}
+		fflush(NULL);
+		pthread_mutex_unlock(&data_lock_arr[ch_read]);
+		break;
+		
 		/*
 		   if(ch==MAX_BUF-1){
 		   break;
@@ -993,8 +998,9 @@ static void * data_rcvhandle(void *arg){
 		 */
 		//	}
 		//data_exist_buf = 1;
-		fflush(NULL);
-		pthread_mutex_unlock(&data_lock_arr[ch_read]);
+		//fflush(NULL);
+		//pthread_mutex_unlock(&data_lock_arr[ch_read]);
+	}
 	}
 	while(1);
 }
