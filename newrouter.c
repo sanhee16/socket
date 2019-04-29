@@ -557,13 +557,14 @@ static void * sndhandle(void *arg){
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
 					if(ct_buf[ct_snd].ct_buffer[a][b]!=INFINITE && CT[a][b]== INFINITE){
-					CT[a][b]=ct_buf[ct_snd].ct_buffer[a][b];
+						CT[a][b]=ct_buf[ct_snd].ct_buffer[a][b];
 					}
 				}
 			}
 			ct_buf[ct_snd].exist_buf=0;
 			memset(&ct_buf[ct_snd], 0, sizeof(CT_BUF));
 			int len = sizeof(CT_BUF);
+			arr(ct_buf[ct_snd].ct_buffer,CT);
 			send(cli_sockfd,(char*)&ct_buf[ct_snd],sizeof(CT_BUF),0);
 			pthread_mutex_unlock(&ct_lock[ct_snd]);
 			continue;
