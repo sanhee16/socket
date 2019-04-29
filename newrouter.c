@@ -15,7 +15,7 @@
 //#include "making_rt.h"
 #define CLI_NUM 2
 #define MAX_BUF 100
-#define CT_SIZE 4*4*ROU_NUM*ROU_NUM
+#define CT_SIZE 4*ROU_NUM*ROU_NUM
 
 
 
