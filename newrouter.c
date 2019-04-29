@@ -183,11 +183,10 @@ void arr_copy(int(*arr)[ROU_NUM], int(*copy)[ROU_NUM]);
 int connect_rou(char* );
 int main(int argc, char *argv[])
 {
-	
+	makeCT();	
 	pthread_create(&making_rr[my_num],NULL,RT_handler,NULL);
 	//client_ip[0]="220.149.244.211";
 	//client_ip[1]="220.149.244.212";
-	makeCT();
 	//print_CT();
 	pthread_create(&server, NULL, srv_handle, NULL);
 	//pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
