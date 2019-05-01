@@ -542,10 +542,11 @@ static void * sndhandle(void *arg){
 			ptr_ct_snd=0;
 		}
 		pthread_mutex_lock(&ct_lock[ct_snd]);
-		pthread_mutex_unlock(&lock);
+		//pthread_mutex_unlock(&lock);
 
 		if(ct_buf[ct_snd].exist_buf==0){
 			pthread_mutex_unlock(&ct_lock[ct_snd]);
+			pthread_mutex_unlock(&lock);
 			continue;
 		}
 
@@ -559,6 +560,8 @@ static void * sndhandle(void *arg){
 					}
 				}
 			}
+			pthread_mutex_unlock(&lock);
+
 			takeit[ct_snd]=1;
 			int len = sizeof(SND_CT);
 			arr_copy(ct_buf[ct_snd].ct_buffer, CT);
@@ -1158,7 +1161,6 @@ static void * RT_handler(void *arg){
 		printf("--------------------------RT%d ---------------------------",rt_done);
 		pthread_mutex_lock(&lock);
 		if(rt_done==1){
-
 			pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
 			if(my_num==0 || my_num==1 || my_num==2){
 				pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
