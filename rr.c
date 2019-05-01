@@ -45,6 +45,7 @@ int client_connect[ROU_NUM]={0, };
 //#include "data_handle_router.h"
 
 pthread_t tids[100];
+pthread_t datatids[100];
 pthread_t rcv_thread[100];
 pthread_t snd_thread[100];
 pthread_t server;
@@ -195,7 +196,6 @@ pthread_cond_t cond;
 
 static void * rcvhandle(void *);
 static void * sndhandle(void *);
-static void * handle(void *);
 
 static void * srv_handle(void *);
 static void * cli_handle(void *);
@@ -225,7 +225,6 @@ int main(int argc, char *argv[])
 	 */
 	while(1){
 	}
-}
 
 static void * srv_handle(void * arg)
 {
@@ -268,18 +267,8 @@ static void * srv_handle(void * arg)
 	pthread_mutex_init(&data_lock_read,NULL);
 	printf("route bind\n");
 
-	int count_srv=0;
-	for(int a=0;a<ROU_NUM;a++)
-	{
-		if(my_neighbor[a]==1)
-		{
-			count_srv++;
-		}
-	}
-	printf("count %d ", count_srv);
 	int cli_sockarr;
-
-	for(;;){
+	while(1){
 		ret1= listen(srv_sock, 0);
 		perror("listen");
 
@@ -302,7 +291,6 @@ static void * srv_handle(void * arg)
 }
 
 static void * srv_listen_handler(void * arg){
-
 	int cli_sock = *(int *)arg;
 
 	int ret = -1;
@@ -347,21 +335,19 @@ static void * srv_listen_handler(void * arg){
 	}
 
 	printf("route : ip %s \n clisock %d \n",hbuf,cli_sock);
-	if(client_connect[con]==1 && con!=-1){
-		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sock);
-	}
+	pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sock);
+	client_connect[con]=1;
 	router_num++;
-	while(1);
+	
+	while(1){
+	
+	}
 }
 
 static void * cli_handle(void *arg){
-
-	int con_done[5] = {0, };
-	int all_done=0;
+	int make_cli[ROU_NUM] = {0, };
 	while(1){
-		//      if(all_done==0){
-		for(int a=0;a<5;a++){
-			if(my_neighbor[a]==1 && con_done[a]==0){
+			if(my_neighbor[a]==1){
 				char* send_ip;
 				if(a==0)
 					send_ip="220.149.244.211";
@@ -379,28 +365,15 @@ static void * cli_handle(void *arg){
 				if(make_fd==-1){
 					continue;
 				}
-				con_done[a]=1;
 
-				pthread_create(&snd_thread[router_num],NULL,sndhandle,&make_fd);
-				client_connect[a]=1;
-				printf("make cli fd %d ip %s \n\n",make_fd, send_ip);
-				client_num++;
-				router_num++;
-			}
-			else{
-				con_done[a]=1;
-			}
+				if(client_connect[a]==1&&make_cli[a]==0){
+					pthread_create(&snd_thread[router_num],NULL,sndhandle,&make_fd);
+					router_num++;
+					make_cli[a]=1;
+					printf("make cli fd %d ip %s \n\n",make_fd, send_ip);
+				}
 		}
-		for(int a=0;a<5;a++){
-			if(con_done[a]==0){
-				break;
-			}
-			if(a==4)
-				all_done=1;
-		}
-		//      }
 	}
-	//while(1);
 }
 
 
@@ -432,59 +405,6 @@ int connect_rou(char* send_ip){
 
 }
 
-static void * handle(void * arg)
-{
-	int cli_sockfd = *(int *)arg;
-	int ret = -1;
-	char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
-
-	/* get peer addr */
-	struct sockaddr peer_addr;
-	socklen_t peer_addr_len;
-	memset(&peer_addr, 0, sizeof(peer_addr));
-	peer_addr_len = sizeof(peer_addr);
-	ret = getpeername(cli_sockfd, &peer_addr, &peer_addr_len);
-	ret = getnameinfo(&peer_addr, peer_addr_len,
-			hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
-			NI_NUMERICHOST | NI_NUMERICSERV);
-
-	if(ret != 0){
-		ret = -1;
-		pthread_exit(&ret);
-	}
-
-
-	int rcv_arg,snd_arg;
-	if(*(hbuf+14) == '1'){
-		rcv_arg=0;
-		snd_arg=0;
-	}
-	if(*(hbuf+14) == '2'){
-		snd_arg=1;
-		rcv_arg=1;
-	}
-	if(*(hbuf+14) == '3'){
-		snd_arg=2;
-		rcv_arg=2;
-	}
-	if(*(hbuf+14) == '4'){
-		snd_arg=3;
-		rcv_arg=3;
-	}
-	if(*(hbuf+14) == '5'){
-		rcv_arg=4;
-		snd_arg=4;
-	}
-
-
-
-	//pthread_create(&rcv_thread[cli_sockfd],NULL,rcvhandle,&rcv_arg);
-	//pthread_create(&snd_thread[cli_sockfd],NULL,sndhandle,&cli_sockfd);
-	//pthread_create(&snd_thread[cli_sockfd],NULL,sndhandle,&snd_arg);
-	//printf("make rcv and snd \n\n");
-	while(1){
-	}
-}
 
 int ptr_ct_read=0;
 
@@ -838,7 +758,7 @@ static void * data_srv_handle(void * arg){
 		if (cli_sockarr== -1){
 			close(srv_sock);
 		}
-		pthread_create(&tids[thds], NULL, data_srv_listen_handler, &cli_sockarr);
+		pthread_create(&datatids[thds], NULL, data_srv_listen_handler, &cli_sockarr);
 		thds++;
 	}
 }
