@@ -483,9 +483,6 @@ static void * rcvhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
 	int ct_read=0;
 	while(1){
-		fflush(NULL);
-		SND_CT get_ct_read;
-		memset(&get_ct_read,0,sizeof(SND_CT));
 		int len;
 		int get_ct[ROU_NUM][ROU_NUM];
 		len = recv(cli_sockfd, &get_ct, sizeof(get_ct), 0);
@@ -560,11 +557,10 @@ static void * sndhandle(void *arg){
 					}
 				}
 			}
+			arr_copy(ct_buf[ct_snd].ct_buffer, CT);
 			pthread_mutex_unlock(&lock);
 
 			takeit[ct_snd]=1;
-			int len = sizeof(SND_CT);
-			arr_copy(ct_buf[ct_snd].ct_buffer, CT);
 
 			send(cli_sockfd,(char*)&ct_buf[ct_snd].ct_buffer, sizeof(ct_buf[ct_snd].ct_buffer),0);
 			//send(cli_sockfd,(char*)&ct_buf[ct_snd],sizeof(SND_CT),0);
@@ -575,11 +571,10 @@ static void * sndhandle(void *arg){
 				ct_buf[ct_snd].exist_buf=0;
 				memset(&ct_buf[ct_snd], 0, sizeof(SND_CT));
 			}
+			fflush(NULL);
 			pthread_mutex_unlock(&ct_lock[ct_snd]);
 			continue;
 		}
-
-		fflush(NULL);
 		pthread_mutex_unlock(&ct_lock[ct_snd]);
 	}
 }
