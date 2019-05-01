@@ -496,8 +496,11 @@ static void * rcvhandle(void *arg){
 			if(ptr_ct_read==MAX_BUF){
 				ptr_ct_read=0;
 			}
+			if(ct_buf[ct_read].exist_buf==1){
+				pthread_mutex_unlock(&lock);
+				continue;
+			}
 			pthread_mutex_lock(&ct_lock[ct_read]);
-			pthread_mutex_unlock(&lock);
 
 			if(ct_buf[ct_read].exist_buf==1){
 				pthread_mutex_unlock(&ct_lock[ct_read]);
@@ -508,6 +511,7 @@ static void * rcvhandle(void *arg){
 			ct_buf[ct_read].buf_count=client_num;
 			fflush(NULL);
 
+			pthread_mutex_unlock(&lock);
 			pthread_mutex_unlock(&ct_lock[ct_read]);
 			break;
 		}
@@ -538,9 +542,14 @@ static void * sndhandle(void *arg){
 		if(ptr_ct_snd==MAX_BUF){
 			ptr_ct_snd=0;
 		}
-		pthread_mutex_lock(&ct_lock[ct_snd]);
-		//pthread_mutex_unlock(&lock);
+		if(ct_buf[ct_snd].exist_buf==0){
+			pthread_mutex_unlock(&lock);
+			continue;
+		}
 
+		pthread_mutex_lock(&ct_lock[ct_snd]);
+
+		//pthread_mutex_unlock(&lock);
 		if(ct_buf[ct_snd].exist_buf==0){
 			pthread_mutex_unlock(&ct_lock[ct_snd]);
 			pthread_mutex_unlock(&lock);
@@ -567,9 +576,9 @@ static void * sndhandle(void *arg){
 
 			ct_buf[ct_snd].buf_count--;
 			if(ct_buf[ct_snd].buf_count==0){
+				memset(&ct_buf[ct_snd], 0, sizeof(SND_CT));
 				takeit[ct_snd]=0;
 				ct_buf[ct_snd].exist_buf=0;
-				memset(&ct_buf[ct_snd], 0, sizeof(SND_CT));
 			}
 			fflush(NULL);
 			pthread_mutex_unlock(&ct_lock[ct_snd]);
