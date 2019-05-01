@@ -208,21 +208,7 @@ int main(int argc, char *argv[])
 {
 	makeCT();
 	pthread_create(&making_rr,NULL,RT_handler,NULL);
-	//pthread_create(&making_rr[my_num],NULL,RT_handler,NULL);
-	//client_ip[0]="220.149.244.211";
-	//client_ip[1]="220.149.244.212";
-	//print_CT();
 	pthread_create(&server, NULL, srv_handle, NULL);
-	//pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
-	//pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
-	//pthread_create(&making_rr,NULL,RT_handler,NULL);
-
-	/*
-	   pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
-	   if(my_num==0 || my_num==1 || my_num==2){
-	   pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
-	   }
-	 */
 	while(1){
 	}
 }
@@ -287,7 +273,6 @@ static void * srv_handle(void * arg)
 		pthread_create(&tids[thds], NULL, srv_listen_handler, &cli_sockarr);
 		thds++;
 	}
-
 }
 
 static void * srv_listen_handler(void * arg){
@@ -339,9 +324,6 @@ static void * srv_listen_handler(void * arg){
 	client_connect[con]=1;
 	router_num++;
 	
-	while(1){
-	
-	}
 }
 
 static void * cli_handle(void *arg){
