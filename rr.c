@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 	 */
 	while(1){
 	}
-
+}
 static void * srv_handle(void * arg)
 {
 	int srv_sock, cli_sock;
@@ -347,6 +347,7 @@ static void * srv_listen_handler(void * arg){
 static void * cli_handle(void *arg){
 	int make_cli[ROU_NUM] = {0, };
 	while(1){
+		for(int a=0;a<ROU_NUM;a++){
 			if(my_neighbor[a]==1){
 				char* send_ip;
 				if(a==0)
@@ -372,6 +373,7 @@ static void * cli_handle(void *arg){
 					make_cli[a]=1;
 					printf("make cli fd %d ip %s \n\n",make_fd, send_ip);
 				}
+			}
 		}
 	}
 }
