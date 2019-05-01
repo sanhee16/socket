@@ -567,7 +567,6 @@ static void * sndhandle(void *arg){
 				}
 			}
 			arr_copy(ct_buf[ct_snd].ct_buffer, CT);
-			pthread_mutex_unlock(&lock);
 
 			takeit[ct_snd]=1;
 
@@ -580,7 +579,9 @@ static void * sndhandle(void *arg){
 				takeit[ct_snd]=0;
 				ct_buf[ct_snd].exist_buf=0;
 			}
+
 			fflush(NULL);
+			pthread_mutex_unlock(&lock);
 			pthread_mutex_unlock(&ct_lock[ct_snd]);
 			continue;
 		}
