@@ -41,7 +41,7 @@ route_table rt;
 
 void print_CT();
 
-
+int client_connect[ROU_NUM]={0, };
 //#include "data_handle_router.h"
 
 pthread_t tids[100];
@@ -324,24 +324,32 @@ static void * srv_listen_handler(void * arg){
 		pthread_exit(&ret);
 	}
 
+	int con=-1;
 	if(*(hbuf+14)=='1'){
 		neighbor_sock_srv[0]=cli_sock;
+		con=0;
 	}
 	else if(*(hbuf+14)=='2'){
 		neighbor_sock_srv[1]=cli_sock;
+		con=1;
 	}
 	else if(*(hbuf+14)=='3'){
 		neighbor_sock_srv[2]=cli_sock;
+		con=2;
 	}
 	else if(*(hbuf+14)=='4'){
 		neighbor_sock_srv[3]=cli_sock;
+		con=3;
 	}
 	else if(*(hbuf+14)=='5'){
 		neighbor_sock_srv[4]=cli_sock;
+		con=4;
 	}
 
 	printf("route : ip %s \n clisock %d \n",hbuf,cli_sock);
-	pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sock);
+	if(client_connect[con]==1 && con!=-1){
+		pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sock);
+	}
 	router_num++;
 	while(1);
 }
@@ -374,6 +382,7 @@ static void * cli_handle(void *arg){
 				con_done[a]=1;
 
 				pthread_create(&snd_thread[router_num],NULL,sndhandle,&make_fd);
+				client_connect[a]=1;
 				printf("make cli fd %d ip %s \n\n",make_fd, send_ip);
 				client_num++;
 				router_num++;
