@@ -504,6 +504,7 @@ static void * sndhandle(void *arg){
 			continue;
 		}
 		pthread_mutex_unlock(&ct_lock[ct_snd]);
+		pthread_mutex_unlock(&lock);
 	}
 }
 
