@@ -353,7 +353,7 @@ static void * cli_handle(void *arg){
 					continue;
 				}
 
-				if(client_connect[a]==1&&make_cli[a]==0){
+				if(make_cli[a]==0){
 					pthread_create(&snd_thread[router_num],NULL,sndhandle,&make_fd);
 					router_num++;
 					make_cli[a]=1;
