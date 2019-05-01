@@ -578,6 +578,7 @@ static void * sndhandle(void *arg){
 			pthread_mutex_unlock(&ct_lock[ct_snd]);
 			continue;
 		}
+
 		fflush(NULL);
 		pthread_mutex_unlock(&ct_lock[ct_snd]);
 	}
@@ -1202,7 +1203,7 @@ static void * RT_handler(void *arg){
 		int small=-1;
 		int small_dist=INFINITE+1;
 
-		for(int count=0; count<ROU_NUM; count++){
+		for(int count=0; count<ROU_NUM-1; count++){
 			small=-1;
 			small_dist=INFINITE+1;
 			u=-1; v=-1;
@@ -1217,14 +1218,13 @@ static void * RT_handler(void *arg){
 			u=small;
 			for(int b=0;b<ROU_NUM;b++){
 				v=-1;
-				if(set_c[b]==0)
+				if(set_c[b]==0){
 					continue;
+				}
 				v=b;
-				//      printf("u is %d , v is %d \n",u,v);
 				if(d[v] > CT[u][v]+d[u]){
 					d[v]=CT[u][v]+d[u];
 					edge[v]=u;
-					//rt.next[v]=edge[v];
 					int search_n=v;
 					while(1){
 						if(edge[search_n]==source){
@@ -1237,20 +1237,12 @@ static void * RT_handler(void *arg){
 				}
 			}
 		}
-		//      printf("\n\n------result------\n\n");
-		for(int a=0;a<ROU_NUM;a++){
-			//printf("%d -> %d : %d",source, a, d[a]);
-			//printf(" next %d \n",edge[a]);
-		}
 		printf("\n\n------routing table------\n\n");
 		printf(" dest next cost \n");
 		for(int a=0;a<ROU_NUM;a++){
-			//if(a==my_num)
-			//      continue;
 			printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
 			printf("\n");
 		}
-		//printf("RTRTRTRTRT MAKE TABLE ??? %d \n\n",make_table);
 
 		for(int a=0;a<ROU_NUM;a++){
 			if(CT[a][a]==0){
@@ -1261,6 +1253,7 @@ static void * RT_handler(void *arg){
 				break;
 			}
 		}
+
 		pthread_mutex_unlock(&lock);
 	}
 	while(1);
