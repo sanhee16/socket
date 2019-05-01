@@ -864,8 +864,8 @@ static void * data_srv_listen_handler(void * arg){
 static void * data_cli_handle(void *arg){
 	int con_done[5] = {0, };
 	int all_done=0;
-//	printf("\n\n\n\nmake data client \n\n\n\n\n");
-//	printf("neighbot %d %d %d %d ",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3]);
+	//	printf("\n\n\n\nmake data client \n\n\n\n\n");
+	//	printf("neighbot %d %d %d %d ",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3]);
 	while(1){
 		//if(all_done==0){
 		for(int a=0;a<ROU_NUM;a++){
@@ -1159,28 +1159,25 @@ static void * RT_handler(void *arg){
 
 	while(1){
 		printf("--------------------------RT%d ---------------------------",rt_done);
-		pthread_mutex_lock(&lock);
 		if(rt_done==1){
 			/*
-			pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
-			if(my_num==0 || my_num==1 || my_num==2){
-				pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
-			}
-			*/
+			   pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
+			   if(my_num==0 || my_num==1 || my_num==2){
+			   pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
+			   }
+			 */
 			printf("\n\n------routing table------\n\n");
-			        printf(" dest next cost \n");
-					        for(int a=0;a<ROU_NUM;a++){
-								            //if(a==my_num)
-								            //      continue;
-								            printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
-											            printf("\n");
-														        }
+			printf(" dest next cost \n");
+			for(int a=0;a<ROU_NUM;a++){
+				printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
+				printf("\n");
+			}
 
-							printf("-----------------cost table --------------------\n");
+			printf("-----------------cost table --------------------\n");
 			print_CT();
-			pthread_mutex_unlock(&lock);
-			break;
+			continue;
 		}
+		pthread_mutex_lock(&lock);
 		int d[ROU_NUM];
 		int set_s[ROU_NUM];
 		int set_c[ROU_NUM];
@@ -1266,6 +1263,7 @@ static void * RT_handler(void *arg){
 		}
 		pthread_mutex_unlock(&lock);
 	}
+	while(1);
 	return 0;
 }
 
