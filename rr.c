@@ -472,6 +472,7 @@ static void * sndhandle(void *arg){
 			pthread_mutex_unlock(&lock);
 			continue;
 		}
+		 print_CT();
 
 		if(ct_buf[ct_snd].exist_buf==1 && takeit[ct_snd]==0){
 			print_CT();
