@@ -864,8 +864,8 @@ static void * data_srv_listen_handler(void * arg){
 static void * data_cli_handle(void *arg){
 	int con_done[5] = {0, };
 	int all_done=0;
-	printf("\n\n\n\nmake data client \n\n\n\n\n");
-	printf("neighbot %d %d %d %d ",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3]);
+//	printf("\n\n\n\nmake data client \n\n\n\n\n");
+//	printf("neighbot %d %d %d %d ",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3]);
 	while(1){
 		//if(all_done==0){
 		for(int a=0;a<ROU_NUM;a++){
@@ -887,7 +887,7 @@ static void * data_cli_handle(void *arg){
 				int make_fd = connect_rou_data(send_ip);
 				data_neighbor_sock[a]=make_fd;
 
-				printf("connect sock %d \n\n",data_neighbor_sock[a]);
+				//printf("connect sock %d \n\n",data_neighbor_sock[a]);
 				if(make_fd==-1){
 					con_done[a]=0;
 					continue;
@@ -1036,7 +1036,7 @@ static void * data_sndhandle(void *arg){
 			continue;
 		}
 		if(data_exist_buf_arr[ch]==1){
-			printf("buffer! \n");
+			//printf("buffer! \n");
 			MSG_T snd_msg;
 			memset(&snd_msg,0,sizeof(MSG_T));
 			memcpy(&snd_msg,&buffer_arr[ch],sizeof(MSG_T));
@@ -1161,10 +1161,23 @@ static void * RT_handler(void *arg){
 		printf("--------------------------RT%d ---------------------------",rt_done);
 		pthread_mutex_lock(&lock);
 		if(rt_done==1){
+			/*
 			pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
 			if(my_num==0 || my_num==1 || my_num==2){
 				pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 			}
+			*/
+			printf("\n\n------routing table------\n\n");
+			        printf(" dest next cost \n");
+					        for(int a=0;a<ROU_NUM;a++){
+								            //if(a==my_num)
+								            //      continue;
+								            printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
+											            printf("\n");
+														        }
+
+							printf("-----------------cost table --------------------\n");
+			print_CT();
 			pthread_mutex_unlock(&lock);
 			break;
 		}
