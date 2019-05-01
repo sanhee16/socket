@@ -1165,6 +1165,7 @@ static void * RT_handler(void *arg){
 			if(my_num==0 || my_num==1 || my_num==2){
 				pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 			}
+			pthread_mutex_unlock(&lock);
 			break;
 		}
 		int d[ROU_NUM];
