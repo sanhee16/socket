@@ -348,7 +348,7 @@ static void * cli_handle(void *arg){
 	int make_cli[ROU_NUM] = {0, };
 	while(1){
 		for(int a=0;a<ROU_NUM;a++){
-			if(my_neighbor[a]==1){
+			if(my_neighbor[a]==1 && make_cli[a]==0){
 				char* send_ip;
 				if(a==0)
 					send_ip="220.149.244.211";
