@@ -207,6 +207,13 @@ int connect_rou(char* );
 int main(int argc, char *argv[])
 {
 	makeCT();
+	pthread_mutex_init(&lock, NULL);
+	pthread_mutex_init(&data_lock_read,NULL);
+	pthread_mutex_init(&data_lock, NULL);
+	for(int a=0;a<MAX_BUF;a++){
+		pthread_mutex_init(&data_lock_arr[a], NULL);
+		pthread_mutex_init(&ct_lock[a], NULL);
+	}
 	pthread_create(&making_rr,NULL,RT_handler,NULL);
 	pthread_create(&server, NULL, srv_handle, NULL);
 	while(1){
@@ -248,9 +255,6 @@ static void * srv_handle(void * arg)
 	}
 	pthread_create(&client, NULL, cli_handle, NULL);
 
-	pthread_mutex_init(&lock, NULL);
-	pthread_cond_init(&cond, NULL);
-	pthread_mutex_init(&data_lock_read,NULL);
 	printf("route bind\n");
 
 	int cli_sockarr;
@@ -323,7 +327,7 @@ static void * srv_listen_handler(void * arg){
 	pthread_create(&rcv_thread[router_num],NULL,rcvhandle,&cli_sock);
 	client_connect[con]=1;
 	router_num++;
-	
+
 }
 
 static void * cli_handle(void *arg){
@@ -713,11 +717,6 @@ static void * data_srv_handle(void * arg){
 		return 0;
 	}
 	pthread_create(&data_client, NULL, data_cli_handle, NULL);
-	pthread_mutex_init(&data_lock, NULL);
-	for(int a=0;a<MAX_BUF;a++){
-		pthread_mutex_init(&data_lock_arr[a], NULL);
-		pthread_mutex_init(&ct_lock[a], NULL);
-	}
 	printf("data bind\n");
 	int count_srv=0;
 	for(int a=0;a<ROU_NUM;a++){
