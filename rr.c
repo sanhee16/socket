@@ -472,10 +472,8 @@ static void * sndhandle(void *arg){
 			pthread_mutex_unlock(&lock);
 			continue;
 		}
-		 print_CT();
 
 		if(ct_buf[ct_snd].exist_buf==1 && takeit[ct_snd]==0){
-			print_CT();
 			for(int a=0;a<ROU_NUM;a++){
 				for(int b=0;b<ROU_NUM;b++){
 					if(ct_buf[ct_snd].ct_buffer[a][b]!=INFINITE && CT[a][b]== INFINITE){
