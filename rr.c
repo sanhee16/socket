@@ -1175,7 +1175,7 @@ static void * RT_handler(void *arg){
 
 		if(rt_done==1){
 			printf("-----------------cost table --------------------\n");
-			trint_CT();
+			print_CT();
 
 		}
 		pthread_mutex_unlock(&lock);
