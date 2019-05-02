@@ -1076,7 +1076,6 @@ static void * RT_handler(void *arg){
 	//int done = *(int *)arg;
 
 	while(1){
-		printf("--------------------------RT%d ---------------------------",rt_done);
 		if(rt_done==1){
 			/*
 			   pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
