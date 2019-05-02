@@ -1084,6 +1084,7 @@ static void * RT_handler(void *arg){
 			   pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
 			   }
 			 */
+			/*
 			printf("\n\n------routing table------\n\n");
 			printf(" dest next cost \n");
 			for(int a=0;a<ROU_NUM;a++){
@@ -1093,6 +1094,7 @@ static void * RT_handler(void *arg){
 
 			printf("-----------------cost table --------------------\n");
 			print_CT();
+			*/
 			continue;
 		}
 		pthread_mutex_lock(&lock);
@@ -1171,6 +1173,11 @@ static void * RT_handler(void *arg){
 			}
 		}
 
+		if(rt_done==1){
+			printf("-----------------cost table --------------------\n");
+			trint_CT();
+
+		}
 		pthread_mutex_unlock(&lock);
 	}
 	while(1);
