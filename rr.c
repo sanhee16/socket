@@ -14,7 +14,7 @@
 #include "fileopen.h"
 //#include "making_rt.h"
 #define CLI_NUM 2
-#define MAX_BUF 100
+#define MAX_BUF 10
 #define CT_SIZE 4*ROU_NUM*ROU_NUM
 
 
@@ -945,7 +945,7 @@ static void * data_sndhandle(void *arg){
 		pthread_mutex_lock(&data_lock_arr[ch]);
 		pthread_mutex_unlock(&data_lock);
 
-		//              printf("snd in the mutex ch!\n ");
+		//printf("snd in the mutex ch!\n ");
 
 		if(data_exist_buf_arr[ch]==0){
 			pthread_mutex_unlock(&data_lock_arr[ch]);
@@ -956,25 +956,32 @@ static void * data_sndhandle(void *arg){
 			MSG_T snd_msg;
 			memset(&snd_msg,0,sizeof(MSG_T));
 			memcpy(&snd_msg,&buffer_arr[ch],sizeof(MSG_T));
-
+			int snd_sockfd=-1;
+			int dest_num=-1;
 			int compare=-1;
+
 			if(*(snd_msg.recv_ip+14)=='1'){
 				compare=0;
+				dest_num=0;
 			}
 			else if(*(snd_msg.recv_ip+14)=='2'){
 				compare=1;
+				dest_num=1;
 			}
 			else if(*(snd_msg.recv_ip+14)=='3'){
 				compare=2;
+				dest_num=2;
 			}
 			else if(*(snd_msg.recv_ip+14)=='4'){
 				compare=3;
+				dest_num=3;
 			}
 			else if(*(snd_msg.recv_ip+14)=='5'){
 				compare=4;
+				dest_num=4;
 			}
 
-			printf("recv ip is %s \n",snd_msg.snd_ip);
+			printf("send ip is %s \n",snd_msg.snd_ip);
 			printf("compare %d my num %d \n\n",compare,my_num);
 			if(compare==my_num){
 				if(real_cli_srv_sockfd==cli_sockfd){
@@ -995,37 +1002,14 @@ static void * data_sndhandle(void *arg){
 					continue;
 				}
 			}
-			int snd_sockfd=-1;
-			int dest_num=-1;
-			if(*(snd_msg.recv_ip + 14)=='1'){
-				dest_num=0;
-			}
-			else if(*(snd_msg.recv_ip + 14)=='2'){
-				dest_num=1;
-			}
-			else if(*(snd_msg.recv_ip + 14)=='3'){
-				dest_num=2;
-			}
-			else if(*(snd_msg.recv_ip + 14)=='4'){
-				dest_num=3;
-			}
-			else if(*(snd_msg.recv_ip + 14)=='5'){
-				dest_num=4;
-			}
-
 			for(int a=0;a<ROU_NUM;a++){
 				if(a==my_num){
 					//do not check mine
 					continue;
 				}
 				if(rt.dest[a]==dest_num){
-					fflush(NULL);
-
 					snd_sockfd=rt.next[a];
 					break;
-				}
-				else{
-					fflush(NULL);
 				}
 			}
 
@@ -1045,11 +1029,12 @@ static void * data_sndhandle(void *arg){
 				pthread_mutex_unlock(&data_lock_arr[ch]);
 				fflush(NULL);
 				fflush(stdin);
-
 			}
-			pthread_mutex_unlock(&data_lock_arr[ch]);
-			fflush(NULL);
-			fflush(stdin);
+			else{
+				pthread_mutex_unlock(&data_lock_arr[ch]);
+				fflush(NULL);
+				fflush(stdin);
+			}
 			//pthread_mutex_unlock(&data_lock);
 
 		} //buffer exist
