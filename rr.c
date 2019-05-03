@@ -642,17 +642,20 @@ static void * data_srv_connect_handle(void * arg){
 
 		if(my_num==0){
 			strcpy(send_ip,"220.149.244.211");
+			data_nei_connect_num[my_num]=fd_sock;
 			real_cli_srv_sockfd=fd_sock;
 			//real_srv_sockfd=fd_sock;
 		}
 		else if(my_num==1){
 			strcpy(send_ip,"220.149.244.212");
 			real_cli_srv_sockfd=fd_sock;
+			data_nei_connect_num[my_num]=fd_sock;
 			//real_cli_sockfd[0]=fd_sock;
 		}
 		else if(my_num==2){
 			strcpy(send_ip,"220.149.244.213");
 			real_cli_srv_sockfd=fd_sock;
+			data_nei_connect_num[my_num]=fd_sock;
 
 			//real_cli_sockfd[1]=fd_sock;
 		}
@@ -809,6 +812,7 @@ static void * data_cli_handle(void *arg){
 					continue;
 				}
 				if(con_done[a]==0){
+					data_nei_connect_num[a]=make_fd;
 					data_neighbor_sock[a]=make_fd;
 					pthread_create(&data_snd_thread[data_router_num],NULL,data_sndhandle,&make_fd);
 					printf("make data cli \n\n");
@@ -918,7 +922,7 @@ static void * data_rcvhandle(void *arg){
 	while(1);
 }
 
-int ptr_cons=0;
+//int ptr_cons=0;
 
 static void * data_sndhandle(void *arg){
 	int cli_sockfd = *(int *)arg;
@@ -926,6 +930,7 @@ static void * data_sndhandle(void *arg){
 	size_t getline_len;
 	int ret;
 	int done=0;
+	int ptr_cons=0;
 
 	for(int a=0;a<ROU_NUM;a++){
 		printf("RT \n");
@@ -987,10 +992,6 @@ static void * data_sndhandle(void *arg){
 				dest_num=4;
 			}
 
-			if(compare==my_num){
-				
-			}
-
 			for(int a=0;a<ROU_NUM;a++){
 				if(a==my_num){
 					//do not check mine
@@ -1001,22 +1002,6 @@ static void * data_sndhandle(void *arg){
 					break;
 				}
 			}
-/*
-			if(my_neighbor[snd_sockfd] != 1 || compare != my_num){
-				for(int test=0;test<ROU_NUM;test++){
-					printf("socket my neigh[%d] %d \n",test,data_neighbor_sock[test]);
-				}
-				printf("not mine my socket %d , its socket %d \n",cli_sockfd, data_neighbor_sock[snd_sockfd]);
-				printf("not mine dest %d , send %d , my num %d , neigbor? %d \n",dest_num,snd_sockfd,my_num,my_neighbor[snd_sockfd]);
-				pthread_mutex_unlock(&data_lock);
-				pthread_mutex_unlock(&data_lock_arr[ch]);
-				continue;
-			}
-
-			printf("send ip is %s \n",snd_msg.snd_ip);
-			printf("compare %d my num %d \n\n",compare,my_num);
-			printf("neighbor socket %d || my socket %d \n\n ",data_neighbor_sock[snd_sockfd],cli_sockfd);
-*/
 			if(compare==my_num){
 				if(real_cli_srv_sockfd==cli_sockfd){
 					//pthread_mutex_lock(&data_lock);
@@ -1047,7 +1032,7 @@ static void * data_sndhandle(void *arg){
 				perror("send");
 
 				printf("send ip is %s \n",snd_msg.snd_ip);
-				printf("send to router! \n");
+				printf("send to router! %d \n",snd_sockfd);
 				data_exist_buf_arr[ch]=0;
 				memset(&buffer_arr[ch],0,sizeof(MSG_T));
 				memset(&data_buffer,0,sizeof(DATA_BUF));
