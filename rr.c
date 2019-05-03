@@ -788,8 +788,6 @@ static void * data_cli_handle(void *arg){
 		//if(all_done==0){
 		for(int a=0;a<ROU_NUM;a++){
 			if(my_neighbor[a]==1 && con_done[a]==0){
-				printf("neighbot %d %d %d %d",my_neighbor[0],my_neighbor[1],my_neighbor[2],my_neighbor[3]);
-
 				char* send_ip;
 				if(a==0)
 					send_ip="220.149.244.211";
@@ -1077,23 +1075,18 @@ static void * RT_handler(void *arg){
 
 	while(1){
 		if(rt_done==1){
-			/*
-			   pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
-			   if(my_num==0 || my_num==1 || my_num==2){
-			   pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
-			   }
-			 */
-			/*
-			printf("\n\n------routing table------\n\n");
-			printf(" dest next cost \n");
-			for(int a=0;a<ROU_NUM;a++){
-				printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
-				printf("\n");
-			}
 
-			printf("-----------------cost table --------------------\n");
-			print_CT();
-			*/
+			/*
+			   printf("\n\n------routing table------\n\n");
+			   printf(" dest next cost \n");
+			   for(int a=0;a<ROU_NUM;a++){
+			   printf(" %3d  %3d  %3d",rt.dest[a],rt.next[a],rt.cost[a]);
+			   printf("\n");
+			   }
+
+			   printf("-----------------cost table --------------------\n");
+			   print_CT();
+			 */
 			continue;
 		}
 		pthread_mutex_lock(&lock);
@@ -1175,6 +1168,10 @@ static void * RT_handler(void *arg){
 		if(rt_done==1){
 			printf("-----------------cost table --------------------\n");
 			print_CT();
+			pthread_create(&data_srv_thread,NULL,data_srv_handle,NULL);
+			if(my_num==0 || my_num==1 || my_num==2){
+				pthread_create(&cli_srv_connect_thread, NULL, data_srv_connect_handle, NULL);
+			}
 
 		}
 		pthread_mutex_unlock(&lock);
