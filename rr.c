@@ -987,6 +987,10 @@ static void * data_sndhandle(void *arg){
 				dest_num=4;
 			}
 
+			if(compare==my_num){
+				
+			}
+
 			for(int a=0;a<ROU_NUM;a++){
 				if(a==my_num){
 					//do not check mine
@@ -997,9 +1001,8 @@ static void * data_sndhandle(void *arg){
 					break;
 				}
 			}
-
-
-			if(my_neighbor[snd_sockfd]!=1 || dest_num!=my_num){
+/*
+			if(my_neighbor[snd_sockfd] != 1 || compare != my_num){
 				for(int test=0;test<ROU_NUM;test++){
 					printf("socket my neigh[%d] %d \n",test,data_neighbor_sock[test]);
 				}
@@ -1013,7 +1016,7 @@ static void * data_sndhandle(void *arg){
 			printf("send ip is %s \n",snd_msg.snd_ip);
 			printf("compare %d my num %d \n\n",compare,my_num);
 			printf("neighbor socket %d || my socket %d \n\n ",data_neighbor_sock[snd_sockfd],cli_sockfd);
-
+*/
 			if(compare==my_num){
 				if(real_cli_srv_sockfd==cli_sockfd){
 					//pthread_mutex_lock(&data_lock);
@@ -1031,7 +1034,6 @@ static void * data_sndhandle(void *arg){
 					continue;
 				}
 				else{
-
 					pthread_mutex_unlock(&data_lock);
 					pthread_mutex_unlock(&data_lock_arr[ch]);
 					continue;
