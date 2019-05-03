@@ -79,7 +79,7 @@ int close_cli;
 int get_buf[ROU_NUM];
 int fin_costtable[ROU_NUM]={0,};
 int data_get_buf[ROU_NUM];
-
+int data_nei_connect_num[ROU_NUM]={0, };
 
 /*
 
@@ -629,49 +629,52 @@ static void * data_srv_connect_handle(void * arg){
 	int len;
 	struct sockaddr_in addr;
 
-	char send_ip[16];
 
-	fd_sock = socket(AF_INET, SOCK_STREAM, 0);
+	while(1){
+		char send_ip[16]; 
+		fd_sock = socket(AF_INET, SOCK_STREAM, 0);
 
-	real_cli_srv_sockfd=-1;
-	if(my_num==0){
-		strcpy(send_ip,"220.149.244.211");
-		real_cli_srv_sockfd=fd_sock;
-		//real_srv_sockfd=fd_sock;
+		real_cli_srv_sockfd=-1;
+		if (fd_sock == -1) { 
+			perror("socket");
+			continue;
+		}
+
+		if(my_num==0){
+			strcpy(send_ip,"220.149.244.211");
+			real_cli_srv_sockfd=fd_sock;
+			//real_srv_sockfd=fd_sock;
+		}
+		else if(my_num==1){
+			strcpy(send_ip,"220.149.244.212");
+			real_cli_srv_sockfd=fd_sock;
+			//real_cli_sockfd[0]=fd_sock;
+		}
+		else if(my_num==2){
+			strcpy(send_ip,"220.149.244.213");
+			real_cli_srv_sockfd=fd_sock;
+
+			//real_cli_sockfd[1]=fd_sock;
+		}
+
+		printf("semnd ip %s \n",send_ip);
+		memset(&addr, 0, sizeof(addr));
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons (port);
+		inet_pton(AF_INET, send_ip, &addr.sin_addr);
+
+		//connect
+		ret = connect(fd_sock, (struct sockaddr *)&addr, sizeof(addr));
+		if(ret == -1){
+			//perror("connect");
+			close(fd_sock);
+		}
+		printf("make router - server/client connect");
+
+		pthread_create(&data_rcv_thread_srv,NULL,data_rcvhandle,&fd_sock);
+		pthread_create(&data_snd_thread_srv,NULL,data_sndhandle,&fd_sock);
+		break;
 	}
-	else if(my_num==1){
-		strcpy(send_ip,"220.149.244.212");
-		real_cli_srv_sockfd=fd_sock;
-		//real_cli_sockfd[0]=fd_sock;
-	}
-	else if(my_num==2){
-		strcpy(send_ip,"220.149.244.213");
-		real_cli_srv_sockfd=fd_sock;
-
-		//real_cli_sockfd[1]=fd_sock;
-	}
-
-	if (fd_sock == -1) {
-		perror("socket");
-	}
-
-	printf("semnd ip %s \n",send_ip);
-	memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons (port);
-	inet_pton(AF_INET, send_ip, &addr.sin_addr);
-
-	//connect
-	ret = connect(fd_sock, (struct sockaddr *)&addr, sizeof(addr));
-	if(ret == -1){
-		//perror("connect");
-		close(fd_sock);
-	}
-	printf("make router - server/client connect");
-
-	pthread_create(&data_rcv_thread_srv,NULL,data_rcvhandle,&fd_sock);
-	pthread_create(&data_snd_thread_srv,NULL,data_sndhandle,&fd_sock);
-
 	while(1);
 	//return fd_sock;
 }
@@ -801,12 +804,12 @@ static void * data_cli_handle(void *arg){
 					send_ip="220.149.244.215";
 
 				int make_fd = connect_rou_data(send_ip);
-				data_neighbor_sock[a]=make_fd;
 				if(make_fd==-1){
 					con_done[a]=0;
 					continue;
 				}
 				if(con_done[a]==0){
+					data_neighbor_sock[a]=make_fd;
 					pthread_create(&data_snd_thread[data_router_num],NULL,data_sndhandle,&make_fd);
 					printf("make data cli \n\n");
 					data_router_num++;
@@ -884,6 +887,7 @@ static void * data_rcvhandle(void *arg){
 
 			if(data_exist_buf_arr[ch_read]==1){
 				pthread_mutex_unlock(&data_lock_arr[ch_read]);
+				pthread_mutex_unlock(&data_lock_read);
 				continue;
 			}
 
@@ -905,7 +909,7 @@ static void * data_rcvhandle(void *arg){
 
 			pthread_mutex_unlock(&data_lock_read);
 			pthread_mutex_unlock(&data_lock_arr[ch_read]);
-			
+
 			printf("read buffer in %d \n",ch_read);
 			printf("break \n");
 			break;
@@ -922,6 +926,7 @@ static void * data_sndhandle(void *arg){
 	size_t getline_len;
 	int ret;
 	int done=0;
+
 	for(int a=0;a<ROU_NUM;a++){
 		printf("RT \n");
 		printf("%d %d %d ",rt.dest[a],rt.next[a],rt.cost[a]);
@@ -931,7 +936,7 @@ static void * data_sndhandle(void *arg){
 		fflush(NULL);
 
 		pthread_mutex_lock(&data_lock);
-		//              printf("snd in the mutex !\n ");
+		//printf("snd in the mutex !\n ");
 		ch=ptr_cons;
 		ptr_cons++;
 		if(ptr_cons==MAX_BUF){
@@ -944,12 +949,11 @@ static void * data_sndhandle(void *arg){
 		}
 		pthread_mutex_lock(&data_lock_arr[ch]);
 		//pthread_mutex_unlock(&data_lock);
-
 		//printf("snd in the mutex ch!\n ");
 
 		if(data_exist_buf_arr[ch]==0){
+			pthread_mutex_unlock(&data_lock);
 			pthread_mutex_unlock(&data_lock_arr[ch]);
-			pthread_mutex_unlock(&data_lock); 
 			continue;
 		}
 		if(data_exist_buf_arr[ch]==1){
@@ -961,6 +965,7 @@ static void * data_sndhandle(void *arg){
 			int dest_num=-1;
 			int compare=-1;
 
+			printf("snd recv ip %s and last is %c \n",snd_msg.recv_ip,*(snd_msg.recv_ip+14));
 			if(*(snd_msg.recv_ip+14)=='1'){
 				compare=0;
 				dest_num=0;
@@ -982,9 +987,33 @@ static void * data_sndhandle(void *arg){
 				dest_num=4;
 			}
 
+			for(int a=0;a<ROU_NUM;a++){
+				if(a==my_num){
+					//do not check mine
+					continue;
+				}
+				if(rt.dest[a]==dest_num){
+					snd_sockfd=rt.next[a];
+					break;
+				}
+			}
+
+
+			if(my_neighbor[snd_sockfd]!=1 || dest_num!=my_num){
+				for(int test=0;test<ROU_NUM;test++){
+					printf("socket my neigh[%d] %d \n",test,data_neighbor_sock[test]);
+				}
+				printf("not mine my socket %d , its socket %d \n",cli_sockfd, data_neighbor_sock[snd_sockfd]);
+				printf("not mine dest %d , send %d , my num %d , neigbor? %d \n",dest_num,snd_sockfd,my_num,my_neighbor[snd_sockfd]);
+				pthread_mutex_unlock(&data_lock);
+				pthread_mutex_unlock(&data_lock_arr[ch]);
+				continue;
+			}
+
 			printf("send ip is %s \n",snd_msg.snd_ip);
 			printf("compare %d my num %d \n\n",compare,my_num);
 			printf("neighbor socket %d || my socket %d \n\n ",data_neighbor_sock[snd_sockfd],cli_sockfd);
+
 			if(compare==my_num){
 				if(real_cli_srv_sockfd==cli_sockfd){
 					//pthread_mutex_lock(&data_lock);
@@ -1008,17 +1037,6 @@ static void * data_sndhandle(void *arg){
 					continue;
 				}
 			}
-			for(int a=0;a<ROU_NUM;a++){
-				if(a==my_num){
-					//do not check mine
-					continue;
-				}
-				if(rt.dest[a]==dest_num){
-					snd_sockfd=rt.next[a];
-					break;
-				}
-			}
-
 			fflush(NULL);
 
 			if(data_neighbor_sock[snd_sockfd]==cli_sockfd){
