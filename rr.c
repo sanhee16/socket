@@ -450,7 +450,8 @@ static void * sndhandle(void *arg){
 	int first[ROU_NUM][ROU_NUM];
 	memset(&first,0,CT_SIZE);
 	arr_copy(first,CT);
-	send(cli_sockfd, (char*)&first, sizeof(first), 0);
+	//send(cli_sockfd, (char*)&first, sizeof(first), 0);
+	send(cli_sockfd, (char*)&first, sizeof(first), MSG_NOSIGNAL);
 
 	while(1){
 		pthread_mutex_lock(&lock);
@@ -485,8 +486,10 @@ static void * sndhandle(void *arg){
 			arr_copy(ct_buf[ct_snd].ct_buffer, CT);
 
 			takeit[ct_snd]=1;
+send(cli_sockfd,(char*)&ct_buf[ct_snd].ct_buffer, sizeof(ct_buf[ct_snd].ct_buffer),MSG_NOSIGNAL);
 
-			send(cli_sockfd,(char*)&ct_buf[ct_snd].ct_buffer, sizeof(ct_buf[ct_snd].ct_buffer),0);
+			//MSG_NOSIGNAL
+			//send(cli_sockfd,(char*)&ct_buf[ct_snd].ct_buffer, sizeof(ct_buf[ct_snd].ct_buffer),0);
 			//send(cli_sockfd,(char*)&ct_buf[ct_snd],sizeof(SND_CT),0);
 
 			ct_buf[ct_snd].buf_count--;
@@ -629,7 +632,9 @@ static void * data_srv_connect_handle(void * arg){
 	int len;
 	struct sockaddr_in addr;
 
-
+	for(int a=0; a<MAX_BUF ; a++){
+		data_exist_buf_arr[a]=0;
+	}
 	while(1){
 		char send_ip[16]; 
 		fd_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -812,6 +817,7 @@ static void * data_cli_handle(void *arg){
 					continue;
 				}
 				if(con_done[a]==0){
+					printf("send ip is %s \n",send_ip);
 					data_nei_connect_num[a]=make_fd;
 					data_neighbor_sock[a]=make_fd;
 					pthread_create(&data_snd_thread[data_router_num],NULL,data_sndhandle,&make_fd);
@@ -833,7 +839,6 @@ int connect_rou_data(char* send_ip){
 	int len;
 	struct sockaddr_in addr;
 
-	printf("send ip is %s \n",send_ip);
 	fd_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_sock == -1) {
 		perror("socket");
@@ -970,6 +975,8 @@ static void * data_sndhandle(void *arg){
 			int dest_num=-1;
 			int compare=-1;
 
+		
+			printf("msg is %s \n",snd_msg.msg);
 			printf("snd recv ip %s and last is %c \n",snd_msg.recv_ip,*(snd_msg.recv_ip+14));
 			if(*(snd_msg.recv_ip+14)=='1'){
 				compare=0;
@@ -1002,11 +1009,16 @@ static void * data_sndhandle(void *arg){
 					break;
 				}
 			}
+			
+			printf("dest : %d \n my num %d \n sockfd %d \n  my socket %d \n next socket %d \n",dest_num,my_num,snd_sockfd,cli_sockfd,data_neighbor_sock[snd_sockfd]);
+
 			if(compare==my_num){
 				if(real_cli_srv_sockfd==cli_sockfd){
 					//pthread_mutex_lock(&data_lock);
 					//if this thread is connected to server, then send msg
-					send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+					
+					send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), MSG_NOSIGNAL);
+					//send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
 					perror("send");
 					printf("send to server !\n");
 					data_exist_buf_arr[ch]=0;
@@ -1028,7 +1040,8 @@ static void * data_sndhandle(void *arg){
 
 			if(data_neighbor_sock[snd_sockfd]==cli_sockfd){
 				fflush(NULL);
-				send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+				//send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), 0);
+				send(cli_sockfd,(char*)&snd_msg, sizeof(MSG_T), MSG_NOSIGNAL);
 				perror("send");
 
 				printf("send ip is %s \n",snd_msg.snd_ip);
